@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+
+<style>
+html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	width: 100%;
+	height: 100%;
+}
+
+.map {
+	width: 100%;
+	height: 100%;
+	background-color: lightgray;
+}
+</style>
+
+<!-- jQuery Script, CSS Load -->
+<link href="../lib/jQuertUI-v1.11.2/jquery-ui.min.css" rel="stylesheet">
+<script src="../lib/jQuery-v3.2.1/jquery-3.2.1.js"></script>
+
+<!-- zTree Script, CSS Load -->
+<link href="../lib/zTree-v3.5.36/css/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+<script src="../lib/zTree-v3.5.36/jquery.ztree.all.min.js"></script>
+
+<!-- BootStrap Script, CSS Load -->
+<link href="../lib/bootstrap-v3.3.5/bootstrap.min.css" rel="stylesheet">
+<script src="../lib/bootstrap-v3.3.5/bootstrap.min.js"></script>
+
+<!-- OpenLayers3 Script, CSS Load -->
+<link href="../lib/openLayers3-v4.3.1/ol.css" rel="stylesheet">
+<script src="../lib/openLayers3-v4.3.1/ol-debug.js"></script>
+
+<!-- etc Script Load-->
+<script src="../lib/turf.min.js"></script>
+<script src="../lib/lodash.min.js"></script>
+<script src="../lib/jsts-v2.0.2/jsts.min.js"></script>
+
+
+<!-- uGisMapPlatForm Script, CSS Load-->
+<link href="../css/uGisCSS.css" rel="stylesheet">
+<script src="../lib/proj4/proj4.js"></script>
+<script src="../lib/EPSG_custom.js"></script>
+<script src="../js/uGisMapPlatForm.js"></script>
+<!-- <script src="../js/uGisMapPlatFormScript-debug.js"></script> -->
+<!-- <script src="../js/uGisMapPlatFormScript.min.js"></script> -->
+
+<title>TEST</title>
+
+</head>
+
+<body>
+
+	<div id="map" class="map"></div>
+
+</body>
+
+
+<script>
+	$( document ).ready(
+			function() {
+
+				// uGisMapPlatForm Config 설정
+				ugmp.uGisConfig.init( {
+					proxy : ugmp.contextPath + "/proxy.jsp?url="
+				} );
+
+				// uGisMap 생성
+				ugMap = new ugmp.uGisMap( {
+					target : "map",
+					crs : "EPSG:3857",
+					center : [ 0, 0 ],
+					useMaxExtent : true,
+					useAltKeyOnly : false
+				} );
+
+				ugMap.getMap().addLayer( new ol.layer.Tile( {
+					source : new ol.source.OSM()
+				} ) );
+
+
+				olParser = new jsts.io.OL3Parser();
+
+
+				def_ugGetFeature_res = new ugmp.service.uGisGetFeature( {
+					useProxy : true,
+					maxFeatures : 1,
+					srsName : ugMap.getCRS(),
+					dataViewId : ugMap.getDataViewId(),
+					outputFormat : 'text/xml; subtype=gml/3.1.1',
+					serviceURL : 'http://mapstudio.uitgis.com/ms/wfs?KEY=DA686E2B-1FBA-53B7-4221-4328E91E206C',
+					typeName : 'APILL_RESERVOIR',
+					filter : new ol.format.filter.EqualTo( 'API_NM', '하만3' )
+				} );
+
+				def_ugGetFeature_res.then( function(result) {
+					if ( result.state ) {
+						// uGisVectorLayer 레이어 생성
+						ugVectorLayer_res = new ugmp.layer.uGisVectorLayer( {
+							srsName : "EPSG:3857",
+							features : result.features,
+							style : function(feature, resolution) {
+								return new ol.style.Style( {
+									stroke : new ol.style.Stroke( {
+										color : 'blue',
+										width : 2
+									} ),
+									fill : new ol.style.Fill( {
+										color : 'rgba(0, 0, 255, 0.1)'
+									} ),
+									text : new ol.style.Text( {
+										fill : new ol.style.Fill( {
+											color : 'blue'
+										} ),
+										stroke : new ol.style.Stroke( {
+											color : '#ffffff',
+											width : 3
+										} ),
+										overflow : false,
+										font : 'Bold 15px',
+										text : feature.get( 'API_NM' )
+									} )
+								} );
+							}
+						} );
+
+						// uGisMap에 Vector 레이어 추가
+						ugVector = ugMap.addVectorLayer( {
+							uVectorLayer : ugVectorLayer_res,
+							useExtent : true
+						} );
+						
+						ugMap.setExtent( [14082756.145651447, 4363014.172004195, 14087342.367348557, 4365254.732395804] ) ;
+
+
+						jstsGeom1 = olParser.read( result.features[ 0 ].getGeometry() );
+
+						buffered = jstsGeom1.buffer( 2000 );
+
+						filter_intersects = new ol.format.filter.Intersects( 'SHAPE', olParser.write( buffered ), ugMap.getCRS() );
+
+												
+						tttt( 'APILL_SEAWALL', filter_intersects );
+						tttt( 'APILL_TUBEWELL', filter_intersects );
+
+					}
+				} );
+
+				
+				
+				function tttt( layerName_, filter_intersects_ ) {
+					
+					var def_ugGetFeature_abe = new ugmp.service.uGisGetFeature( {
+						useProxy : true,
+						maxFeatures : 20,
+						srsName : ugMap.getCRS(),
+						dataViewId : ugMap.getDataViewId(),
+						outputFormat : 'text/xml; subtype=gml/3.1.1',
+						serviceURL : 'http://mapstudio.uitgis.com/ms/wfs?KEY=DA686E2B-1FBA-53B7-4221-4328E91E206C',
+						typeName : layerName_,
+						filter : filter_intersects_
+					} );
+
+					def_ugGetFeature_abe.then( function(result) {
+						if ( result.state ) {
+							
+							// uGisVectorLayer 레이어 생성
+							var ugVectorLayer_abe = new ugmp.layer.uGisVectorLayer( {
+								srsName : "EPSG:3857",
+								features : result.features,
+								style : function(feature, resolution) {
+									return new ol.style.Style( {
+										stroke : new ol.style.Stroke( {
+											color : 'red',
+											width : 2
+										} ),
+										text : new ol.style.Text( {
+											fill : new ol.style.Fill( {
+												color : 'blue'
+											} ),
+											stroke : new ol.style.Stroke( {
+												color : '#ffffff',
+												width : 3
+											} ),
+											overflow : false,
+											font : 'Bold 15px',
+											text : feature.get( 'API_NM' )
+										} )
+									} );
+								}
+							} );
+
+							// uGisMap에 Vector 레이어 추가
+							ugVector = ugMap.addVectorLayer( {
+								uVectorLayer : ugVectorLayer_abe,
+								useExtent : false
+							} );
+							
+							
+							for( var i in result.features ) {
+								var ff = result.features[ i ];
+
+								jstsGeom1 = olParser.read( ugVectorLayer_res.getOlLayer().getSource().getFeatures()[ 0 ].getGeometry() );
+								jstsGeom2 = olParser.read( ff.getGeometry() );
+
+
+								disOp = new jsts.operation.distance.DistanceOp( jstsGeom1, jstsGeom2 );
+
+								point1 = new ol.geom.Point( [ disOp.nearestPoints()[ 0 ].x, disOp.nearestPoints()[ 0 ].y ] );
+								point2 = new ol.geom.Point( [ disOp.nearestPoints()[ 1 ].x, disOp.nearestPoints()[ 1 ].y ] );
+
+
+								layer_point = new ol.layer.Vector( {
+									source : new ol.source.Vector( {
+										features : [ new ol.Feature( point1 ), new ol.Feature( point2 ) ]
+									} )
+								} );
+
+
+								ugMap.getMap().addLayer( layer_point );
+
+
+								line1 = new ol.geom.LineString( [ [ disOp.nearestPoints()[ 0 ].x, disOp.nearestPoints()[ 0 ].y ],
+										[ disOp.nearestPoints()[ 1 ].x, disOp.nearestPoints()[ 1 ].y ] ] );
+
+
+								var layer_line = new ol.layer.Vector( {
+									source : new ol.source.Vector( {
+										features : [ new ol.Feature( line1 ) ]
+									} )
+								} );
+
+
+								ugMap.getMap().addLayer( layer_line );
+
+
+								var ugVectorLayer_line = new ugmp.layer.uGisVectorLayer( {
+									srsName : "EPSG:3857",
+									features : [ new ol.Feature( line1 ) ],
+									style : function(feature, resolution) {
+										var len = feature.getGeometry().getLength();
+
+										return new ol.style.Style( {
+											stroke : new ol.style.Stroke( {
+												color : 'green',
+												width : 1
+											} ),
+											text : new ol.style.Text( {
+												fill : new ol.style.Fill( {
+													color : 'black'
+												} ),
+												stroke : new ol.style.Stroke( {
+													color : '#ffffff',
+													width : 3
+												} ),
+												font : 'Bold 30px',
+												text : parseInt( len ) + 'm'
+											} )
+										} );
+									}
+								} );
+
+								// uGisMap에 Vector 레이어 추가
+								ugVector = ugMap.addVectorLayer( {
+									uVectorLayer : ugVectorLayer_line,
+									useExtent : false
+								} );
+								
+							}
+							
+							
+						}
+					} );
+					
+				}
+
+			} );
+</script>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+
+<style>
+html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	width: 100%;
+	height: 100%;
+}
+
+.map {
+	width: 100%;
+	height: 100%;
+	background-color: lightgray;
+}
+</style>
+
+<!-- properties Script Load-->
+<script src="../../js/properties.js"></script>
+
+<!-- jQuery Script, CSS Load -->
+<link href="../../lib/jQuertUI-v1.11.2/jquery-ui.min.css" rel="stylesheet">
+<script src="../../lib/jQuery-v3.2.1/jquery-3.2.1.js"></script>
+
+<!-- zTree Script, CSS Load -->
+<link href="../../lib/zTree-v3.5.36/css/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+<script src="../../lib/zTree-v3.5.36/jquery.ztree.all.min.js"></script>
+
+<!-- BootStrap Script, CSS Load -->
+<link href="../../lib/bootstrap-v3.3.5/bootstrap.min.css" rel="stylesheet">
+<script src="../../lib/bootstrap-v3.3.5/bootstrap.min.js"></script>
+
+<!-- OpenLayers3 Script, CSS Load -->
+<link href="../../lib/openLayers3-v4.3.1/ol.css" rel="stylesheet">
+<script src="../../lib/openLayers3-v4.3.1/ol-debug.js"></script>
+
+<!-- etc Script Load-->
+<script src="../../lib/turf.min.js"></script>
+<script src="../../lib/lodash.min.js"></script>
+
+<!-- Map API Key Script Load -->
+<script src="../../lib/OpenLayers2.13.js"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b9eee9b5b274ba36817d07ed12b75581"></script>
+<script src="https://openapi.map.naver.com/openapi/v3/maps.js?clientId=sG36Y_9A_I3YVq394R_1"></script>
+<script src="http://map.ngii.go.kr/openapi/ngiiMap.js?apikey=BE45C5F6FC53B39B751EBB5B28B06EAB"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDuTiBLO4pGc3kbYJf-3qHJSZhnZBdXfpw" defer></script>
+<script src="http://map.vworld.kr/js/apis.do?type=Base&apiKey=A782B1B4-5C6A-3D0A-A322-A3E4EE190B94&domain=http://gwp.uitgis.com:8080"></script>
+
+<!-- uGisMapPlatForm Script, CSS Load-->
+<link href="../../css/uGisCSS.css" rel="stylesheet">
+<script src="../../lib/proj4/proj4.js"></script>
+<script src="../../lib/EPSG_custom.js"></script>
+<!-- <script src="../../js/uGisMapPlatForm.js"></script> -->
+<!-- <script src="../../js/uGisMapPlatFormScript-debug.js"></script> -->
+<script src="../../js/uGisMapPlatFormScript.min.js"></script>
+
+<title>lineGradientAnimation</title>
+
+</head>
+
+<body>
+
+	<div id="map" class="map"></div>
+
+</body>
+
+
+<script>
+	$( document ).ready( function() {
+
+		// uGisMapPlatForm Config 설정
+		ugmp.uGisConfig.init( {
+			proxy : ugmp.contextPath + "/proxy.jsp?url=",
+			useLoading : true,
+			loadingImg : "https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif",
+			alert_Error : function(msg) {
+				alert( "Error : " + msg );
+			}
+		} );
+
+		// uGisMap 생성
+		ugMap = new ugmp.uGisMap( {
+			target : "map",
+			crs : "EPSG:3857",
+			center : [ 0, 0 ],
+			useMaxExtent : true,
+			useAltKeyOnly : false
+		} );
+
+		ugMap.getMap().addLayer( new ol.layer.Tile( {
+			source : new ol.source.OSM()
+		} ) );
+
+		// 샘플데이터
+		sampleData = new ugmp.uGisHttp.requestData( {
+			type : "get",
+			url : "../data/world_river.geojson",
+			dataType : "json",
+			dataViewId : ugMap.getDataViewId()
+		} );
+
+		// 샘플데이터 ajax 콜백
+		sampleData.then( function(json) {
+			var geoJFormat = new ol.format.GeoJSON( {} );
+
+			featureList = geoJFormat.readFeatures( json );
+
+			// lineGradientAnimation 생성
+			lineGradientAni = new ugmp.animation.lineGradientAnimation( {
+				duration : 5000,
+				repeat : 200,
+				useFade : false
+			} );
+
+			// uGisLineGradientAnimation 생성
+			ugGradientAnimation = new ugmp.animation.uGisLineGradientAnimation( {
+				uGisMap : ugMap,
+				features : featureList.slice( 0, 200 ),
+				originCRS : "EPSG:4326",
+				sync : false,
+				animations : [ lineGradientAni ],
+				style : {
+					lineWidth : 5,
+					startColor : "white",
+					endColor : "blue",
+					useSymbol : true,
+					symbolSRC : "../../images/gRbrraN.png",
+					symbolAnchor : [ 0.5, 0.5 ]
+				}
+			} );
+		} );
+
+	} );
+</script>
+</html>

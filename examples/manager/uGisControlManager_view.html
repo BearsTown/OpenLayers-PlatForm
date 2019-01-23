@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+
+<style>
+html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	width: 100%;
+	height: 100%;
+}
+
+.controlListDIV {
+	float: left;
+	width: 30%;
+	height: 100%;
+	overflow: auto;
+	padding-left: 10px;
+	background-color: white;
+}
+
+.map {
+	float: right;
+	width: 70%;
+	height: 100%;
+	background-color: lightgray;
+}
+
+@media ( max-width : 1500px) {
+	.controlListDIV {
+		width: 40%;
+	}
+	.map {
+		width: 60%;
+	}
+}
+
+@media ( max-width : 900px) {
+	.controlListDIV {
+		width: 50%;
+	}
+	.map {
+		width: 50%;
+	}
+}
+</style>
+
+<!-- properties Script Load-->
+<script src="../../js/properties.js"></script>
+
+<!-- jQuery Script, CSS Load -->
+<link href="../../lib/jQuertUI-v1.11.2/jquery-ui.min.css" rel="stylesheet">
+<script src="../../lib/jQuery-v3.2.1/jquery-3.2.1.js"></script>
+
+<!-- zTree Script, CSS Load -->
+<link href="../../lib/zTree-v3.5.36/css/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+<script src="../../lib/zTree-v3.5.36/jquery.ztree.all.min.js"></script>
+
+<!-- BootStrap Script, CSS Load -->
+<link href="../../lib/bootstrap-v3.3.5/bootstrap.min.css" rel="stylesheet">
+<script src="../../lib/bootstrap-v3.3.5/bootstrap.min.js"></script>
+
+<!-- OpenLayers3 Script, CSS Load -->
+<link href="../../lib/openLayers3-v4.3.1/ol.css" rel="stylesheet">
+<script src="../../lib/openLayers3-v4.3.1/ol-debug.js"></script>
+
+<!-- etc Script Load-->
+<script src="../../lib/turf.min.js"></script>
+<script src="../../lib/lodash.min.js"></script>
+
+<!-- Map API Key Script Load -->
+<script src="../../lib/OpenLayers2.13.js"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b9eee9b5b274ba36817d07ed12b75581"></script>
+<script src="https://openapi.map.naver.com/openapi/v3/maps.js?clientId=sG36Y_9A_I3YVq394R_1"></script>
+<script src="http://map.ngii.go.kr/openapi/ngiiMap.js?apikey=BE45C5F6FC53B39B751EBB5B28B06EAB"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDuTiBLO4pGc3kbYJf-3qHJSZhnZBdXfpw" defer></script>
+<script src="http://map.vworld.kr/js/apis.do?type=Base&apiKey=A782B1B4-5C6A-3D0A-A322-A3E4EE190B94&domain=http://gwp.uitgis.com:8080"></script>
+
+<!-- uGisMapPlatForm Script, CSS Load-->
+<link href="../../css/uGisCSS.css" rel="stylesheet">
+<script src="../../lib/proj4/proj4.js"></script>
+<script src="../../lib/EPSG_custom.js"></script>
+<!-- <script src="../../js/uGisMapPlatForm.js"></script> -->
+<!-- <script src="../../js/uGisMapPlatFormScript-debug.js"></script> -->
+<script src="../../js/uGisMapPlatFormScript.min.js"></script>
+
+<title>uGisControlManager</title>
+
+</head>
+
+<body>
+
+	<div id="controlListDIV" class="controlListDIV"></div>
+	<div id="map" class="map"></div>
+
+</body>
+
+
+<script>
+	$( document ).ready( function() {
+
+		// uGisMapPlatForm Config 설정
+		ugmp.uGisConfig.init( {
+			proxy : ugmp.contextPath + "/proxy.jsp?url=",
+			useLoading : true,
+			loadingImg : "https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif",
+			alert_Error : function(msg) {
+				alert( "Error : " + msg );
+			}
+		} );
+
+		// uGisMap 생성
+		ugMap = new ugmp.uGisMap( {
+			target : "map",
+			crs : "EPSG:3857",
+			center : [ 0, 0 ],
+			useMaxExtent : true,
+			useAltKeyOnly : false
+		} );
+
+		ugMap.getMap().addLayer( new ol.layer.Tile( {
+			source : new ol.source.OSM()
+		} ) );
+		
+
+		ugDragPan = new ugmp.control.uGisDragPan( {
+			uGisMap : ugMap,
+			useDragPan : false,
+			cursorCssName : "cursor-default",
+			activeChangeListener : function(state_) {
+				console.log( "uGisDragPan : " + state_ );
+			}
+		} );
+
+
+		ugDragZoomIn = new ugmp.control.uGisDragZoomIn( {
+			uGisMap : ugMap,
+			useDragPan : false,
+			cursorCssName : "cursor-zoomIn",
+			activeChangeListener : function(state_) {
+				console.log( "uGisDragZoomIn : " + state_ );
+			}
+		} );
+
+
+		ugDragZoomOut = new ugmp.control.uGisDragZoomOut( {
+			uGisMap : ugMap,
+			useDragPan : false,
+			cursorCssName : "cursor-zoomOut",
+			activeChangeListener : function(state_) {
+				console.log( "uGisDragZoomOut : " + state_ );
+			}
+		} );
+
+
+		ugLengthMeasure = new ugmp.control.uGisLengthMeasure( {
+			uGisMap : ugMap,
+			useSnap : true,
+			useDragPan : false,
+			cursorCssName : 'cursor-measureDistance',
+			activeChangeListener : function(state_) {
+				console.log( "uGisLengthMeasure : " + state_ );
+			}
+		} );
+
+
+		ugAreaMeasure = new ugmp.control.uGisAreaMeasure( {
+			uGisMap : ugMap,
+			useSnap : true,
+			useDragPan : true,
+			cursorCssName : 'cursor-measureArea',
+			activeChangeListener : function(state_) {
+				console.log( "uGisAreaMeasure : " + state_ );
+			}
+		} );
+
+
+		ugDrawFeature = new ugmp.control.uGisDrawFeature( {
+			uGisMap : ugMap,
+			useSnap : true,
+			useDragPan : true,
+			drawType : "Box",
+			cursorCssName : 'cursor-rectangle',
+			useDrawEndDisplay : true,
+			activeChangeListener : function(state_) {
+				console.log( "uGisDrawFeature : " + state_ );
+			}
+		} );
+
+
+		ugControlManager = new ugmp.manager.uGisControlManager( {
+			uGisMap : ugMap,
+			controls : [ ugDragPan, ugDragZoomIn, ugDragZoomOut, ugLengthMeasure ]
+		} );
+
+		ugControlManager.add( ugAreaMeasure );
+		ugControlManager.add( ugDrawFeature );
+
+
+		var list = [ {
+			name : "DragPan",
+			control : ugDragPan
+		}, {
+			name : "DragZoomIn",
+			control : ugDragZoomIn
+		}, {
+			name : "DragZoomOut",
+			control : ugDragZoomOut
+		}, {
+			name : "LengthMeasure",
+			control : ugLengthMeasure
+		}, {
+			name : "AreaMeasure",
+			control : ugAreaMeasure
+		}, {
+			name : "DrawFeature",
+			control : ugDrawFeature
+		} ];
+
+
+		for ( var i in list ) {
+			createControlRadio( list[ i ].name );
+		}
+
+
+		function createControlRadio(code_) {
+			var radioDIV =
+				"<div class='radio'>" +
+					"<label>" + 
+						"<input type='radio' name='controlRadios' value='" + code_ + "'>" + code_ +
+					"</label>" + 
+				"</div>";	
+
+			$( "#controlListDIV" ).append( radioDIV );
+		}
+
+
+		$( document ).on( "change", "input[type=radio][name=controlRadios]", function(e_) {
+			if ( this.checked && this.value ) {
+				for ( var i in list ) {
+					if ( list[ i ].name === this.value ) {
+						list[ i ].control.setActive( true );
+						break;
+					}
+				}
+			} else {
+				for ( var i in list ) {
+					if ( list[ i ].name === this.value ) {
+						list[ i ].control.setActive( false );
+						break;
+					}
+				}
+			}
+		} );
+
+		
+		
+
+		// ie cursor
+		var hostIndex = location.href.indexOf( location.host ) + location.host.length;
+		var contextPath = location.href.substring( hostIndex, location.href.indexOf( '/', hostIndex + 1 ) );
+		var agent = navigator.userAgent.toLowerCase();
+		if ( ( navigator.appName == 'Netscape' && navigator.userAgent.search( 'Trident' ) != -1 ) || ( agent.indexOf( "msie" ) != -1 ) ) {
+			var cursorList = [ 'default', 'closeHand', 'identify', 'measureArea', 'measureDistance', 'zoomIn', 'zoomOut', 'zoomOut', 'point', 'line',
+					'polygon', 'rectangle', 'circle' ];
+
+			if ( contextPath === location.origin ) {
+				contextPath = location.origin;
+			} else {
+				contextPath = location.origin + contextPath;
+			}
+
+			for ( var i in cursorList ) {
+				var cursor = cursorList[ i ];
+				var url = contextPath + "/uGisMapPlatForm/images/cursor/cursor_" + cursor + ".cur";
+				createClass( '.cursor-' + cursor, "cursor: url(" + url + "), auto !important;" );
+			}
+		}
+		
+		
+		function createClass(name, rules) {
+			var style = document.createElement( 'style' );
+			style.type = 'text/css';
+			document.getElementsByTagName( 'head' )[ 0 ].appendChild( style );
+			if ( !( style.sheet || {} ).insertRule ) ( style.styleSheet || style.sheet ).addRule( name, rules );
+			else style.sheet.insertRule( name + "{" + rules + "}", 0 );
+		}
+	} );
+</script>
+</html>

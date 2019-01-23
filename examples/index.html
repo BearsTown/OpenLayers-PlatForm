@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+<link rel="stylesheet" href="../lib/bootstrap-v3.3.5/bootstrap.min.css" type="text/css">
+<link rel="stylesheet" href="./resources/layout.css" type="text/css">
+
+<title>OpenLayers Examples</title>
+
+<script type="text/javascript" src="../lib/jQuery-v3.2.1/jquery-3.2.1.min.js"></script>
+
+
+
+<script type="text/javascript" src="../js/properties.js"></script>
+<script type="text/javascript" src="index.js"></script>
+
+
+
+</head>
+
+<body>
+
+	<header class="navbar navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="display-table pull-left">
+				<a class="navbar-brand" href="./" style="margin-left: 0px;"><img src="./resources/logo-uit-150x39.png">&nbsp;OpenLayers - uGisMapPlatForm Examples</a>
+				<form class="navbar-form" role="search">
+					<input name="q" type="text" id="keywords" class="search-query" placeholder="Search" autofocus> <span id="count"></span>
+				</form>
+			</div>
+			<!-- menu items that get hidden below 768px width -->
+			<nav class='collapse navbar-collapse navbar-responsive-collapse'>
+				<ul class="nav navbar-nav pull-right">
+					<li><a href="../apidoc">API</a></li>
+					<li><a class="active" href="index.html">Examples</a></li>
+					<li><a href="https://github.com/BearsTown/OpenLayers-PlatForm" target="_blank">Code</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<div class="container-fluid">
+
+		<div id="examples">
+
+			<div class="desc" style="height: auto;">
+				<p>
+					uGisMapPlatForm API로 설정 및 생성한 예제.
+				</p>
+			</div>
+
+		</div>
+
+	</div>
+
+
+
+	<script>
+		$( document ).ready( function() {
+			run();
+		} );
+	</script>
+
+</body>
+</html>

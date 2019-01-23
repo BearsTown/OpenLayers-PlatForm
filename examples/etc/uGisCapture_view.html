@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+
+<style>
+html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	width: 100%;
+	height: 100%;
+}
+
+.baseMapListDIV {
+	float: left;
+	width: 20%;
+	height: 100%;
+	overflow: auto;
+	position: relative;
+	padding-left: 10px;
+	background-color: white;
+}
+
+.mapMainDIV {
+	float: right;
+	width: 80%;
+	height: 100%;
+	position: relative;
+	background-color: lightgray;
+}
+
+.baseMapDIV {
+	z-index: 20;
+	width: 100%;
+	height: 100%;
+	position: absolute !important;
+}
+
+.mashUpMapDIV {
+	z-index: 30;
+	width: 100%;
+	height: 100%;
+	position: absolute !important;
+}
+
+@media ( max-width : 1500px) {
+	.baseMapListDIV {
+		width: 40%;
+	}
+	.mapMainDIV {
+		width: 60%;
+	}
+}
+
+@media ( max-width : 900px) {
+	.baseMapListDIV {
+		width: 50%;
+	}
+	.mapMainDIV {
+		width: 50%;
+	}
+}
+
+.alignCenterDiv-table {
+	top: 50%;
+	left: 50%;
+	width: 0%;
+	height: 0%;
+	display: table;
+	z-index: 99999;
+	position: absolute !important;
+	background-color: rgba(0, 0, 0, 0.7);
+	transform: translate(-50%, -50%);
+	transition: width 1s ease 0s, height 1s ease 0s;
+}
+
+.alignCenterDiv-cell {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.cBox {
+	width: 70%;
+	height: 80%;
+	display: block;
+	margin: 0 auto;
+	background-color: white;
+}
+
+.captureBtnDIV {
+	right: 10px;
+	bottom: 10px;
+	z-index: 3000;
+	position: absolute;
+}
+
+.btns {
+	width: 15%;
+	float: right;
+	height: 80%;
+	margin: 0 auto;
+}
+
+.btns button, .btns button:hover, .btns button:disabled, .btns button.disabled
+	{
+	border: none !important;
+	background: none !important;
+}
+
+.btns button span {
+	color: #9aca3c;
+	font-size: 40px;
+}
+
+.btns button span:hover {
+	color: #ff846f !important;
+}
+</style>
+
+<!-- properties Script Load-->
+<script src="../../js/properties.js"></script>
+
+<!-- jQuery Script, CSS Load -->
+<link href="../../lib/jQuertUI-v1.11.2/jquery-ui.min.css" rel="stylesheet">
+<script src="../../lib/jQuery-v3.2.1/jquery-3.2.1.js"></script>
+
+<!-- zTree Script, CSS Load -->
+<link href="../../lib/zTree-v3.5.36/css/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+<script src="../../lib/zTree-v3.5.36/jquery.ztree.all.min.js"></script>
+
+<!-- BootStrap Script, CSS Load -->
+<link href="../../lib/bootstrap-v3.3.5/bootstrap.min.css" rel="stylesheet">
+<script src="../../lib/bootstrap-v3.3.5/bootstrap.min.js"></script>
+
+<!-- OpenLayers3 Script, CSS Load -->
+<link href="../../lib/openLayers3-v4.3.1/ol.css" rel="stylesheet">
+<script src="../../lib/openLayers3-v4.3.1/ol-debug.js"></script>
+
+<!-- etc Script Load-->
+<script src="../../lib/turf.min.js"></script>
+<script src="../../lib/lodash.min.js"></script>
+
+<!-- Map API Key Script Load -->
+<script src="../../lib/OpenLayers2.13.js"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b9eee9b5b274ba36817d07ed12b75581"></script>
+<script src="https://openapi.map.naver.com/openapi/v3/maps.js?clientId=sG36Y_9A_I3YVq394R_1"></script>
+<script src="http://map.ngii.go.kr/openapi/ngiiMap.js?apikey=BE45C5F6FC53B39B751EBB5B28B06EAB"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDuTiBLO4pGc3kbYJf-3qHJSZhnZBdXfpw" defer></script>
+<script src="http://map.vworld.kr/js/apis.do?type=Base&apiKey=A782B1B4-5C6A-3D0A-A322-A3E4EE190B94&domain=http://gwp.uitgis.com:8080"></script>
+
+<script type="text/javascript" src="../../lib/html2canvas-etc.js"></script>
+<script type="text/javascript" src="../../lib/html2canvas-google.js"></script>
+
+<script type="text/javascript" src="../../lib//FileSaver.min.js"></script>
+
+<!-- uGisMapPlatForm Script, CSS Load-->
+<link href="../../css/uGisCSS.css" rel="stylesheet">
+<script src="../../lib/proj4/proj4.js"></script>
+<script src="../../lib/EPSG_custom.js"></script>
+<!-- <script src="../../js/uGisMapPlatForm.js"></script> -->
+<!-- <script src="../../js/uGisMapPlatFormScript-debug.js"></script> -->
+<script src="../../js/uGisMapPlatFormScript.min.js"></script>
+
+<title>uGisCapture</title>
+
+</head>
+
+<body>
+
+	<div class="captureBtnDIV">
+		<button id="captureModBtn" type="button" class="btn btn-primary">Capture Mode</button>
+	</div>
+
+
+	<div id="baseMapListDIV" class="baseMapListDIV"></div>
+	<div class="mapMainDIV">
+		<div id="print" class="alignCenterDiv-table" style="display: none;">
+			<div class="alignCenterDiv-cell">
+				<div class="btns">
+					<ul style="list-style: none; padding: 0px;">
+						<li><button class="btn btn-primary" id="captureBtn" disabled>
+								<span class="glyphicon glyphicon-camera" title="캡쳐"></span>
+							</button></li>
+						<li><button class="btn btn-primary" id="closeBtn">
+								<span style="color: gray;" class="glyphicon glyphicon-remove" title="닫기"></span>
+							</button></li>
+					</ul>
+				</div>
+				<div class="cBox"></div>
+			</div>
+		</div>
+
+		<div id="base" class="baseMapDIV"></div>
+		<div id="map" class="mashUpMapDIV"></div>
+	</div>
+</body>
+
+
+<script>
+	$( document ).ready(
+			function() {
+				// uGisMapPlatForm Config 설정
+				ugmp.uGisConfig.init( {
+					proxy : ugmp.contextPath + "/proxy.jsp?url="
+				} );
+
+				// uGisMap 생성
+				ugMap = new ugmp.uGisMap( {
+					target : "map",
+					crs : "EPSG:900913",
+					center : [ 0, 0 ],
+					useMaxExtent : true,
+					useAltKeyOnly : false
+				} );
+
+
+				// 베이스맵 생성
+				ugBaseMap = new ugmp.baseMap.uGisBaseMap( {
+					target : "base",
+					uGisMap : ugMap,
+					baseMapKey : "google_satellite"
+				} );
+
+				var baseMapList = ugBaseMap.getUsableBaseMapList();
+
+				for ( var i in baseMapList ) {
+					createBaseMapRadio( baseMapList[ i ] );
+				}
+
+				function createBaseMapRadio(code_) {
+					var radioDIV = "<div class='radio'>" + "<label>" + "<input type='radio' name='baseMapRadios' value='" + code_ + "'>" + code_ + "</label>"
+							+ "</div>";
+
+					$( "#baseMapListDIV" ).append( radioDIV );
+				}
+
+				$( document ).on( "change", "input[type=radio][name=baseMapRadios]", function() {
+					if ( this.value ) {
+						$( "#closeBtn" ).trigger( 'click' );
+						ugBaseMap.changeBaseMap( this.value );
+					}
+				} );
+
+				// uGisWMS 레이어 생성
+				ugWmsLayer = new ugmp.layer.uGisWMSLayer( {
+					useProxy : false,
+					singleTile : false,
+					serviceURL : "http://mapstudio.uitgis.com/ms/wms?KEY=97C9E25B-494A-E1E6-5036-EE5E45187BE7",
+					ogcParams : {
+						LAYERS : "ROOT",
+						CRS : ugMap.getCRS(),
+						STYLES : "",
+						FORMAT : "image/png",
+						BGCOLOR : "0xffffff",
+						EXCEPTIONS : "BLANK",
+						LABEL : "HIDE_OVERLAP",
+						GRAPHIC_BUFFER : "64",
+						ANTI : "true",
+						TEXT_ANTI : "true",
+						VERSION : "1.3.0"
+					}
+				} );
+
+				// uGisMap에 WMS 레이어 추가
+				ugWMS = ugMap.addWMSLayer( {
+					uWMSLayer : ugWmsLayer,
+					useExtent : true,
+					extent : null,
+					resolution : null
+				} );
+
+
+				// uGisWFS 레이어 생성
+				ugWfsLayer = new ugmp.layer.uGisWFSLayer( {
+					useProxy : true,
+					serviceURL : "http://mapstudio.uitgis.com/ms/wfs?KEY=97C9E25B-494A-E1E6-5036-EE5E45187BE7",
+					layerName : "LV14_SCCO_EMD",
+					srsName : ugMap.getCRS(),
+					maxFeatures : 300,
+					dataViewId : ugMap.getDataViewId()
+				} );
+
+
+				// uGisMap에 WFS 레이어 추가
+				ugWFS = ugMap.addWFSLayer( {
+					uWFSLayer : ugWfsLayer,
+					useExtent : true
+				} );
+
+
+				ugmp.uGisConfig.addLoadEventListener( ugMap.getDataViewId(), function(e, loaded) {
+					$( "#captureBtn" ).prop( "disabled", !loaded );
+				} );
+
+
+				// 캡쳐 모드 활성화
+				$( "#captureModBtn" ).on( "click", function() {
+					$( "#print" ).show();
+					$( "#print" ).width( '100%' );
+					$( "#print" ).height( '100%' );
+
+					setTimeout( function() {
+						ugCapture = new ugmp.uGisCapture( {
+							useSync : true,
+							uGisMap : ugMap,
+							uGisBaseMap : ugBaseMap,
+							appendElement : $( "#print" ).find( ".cBox" )[ 0 ]
+						} );
+					}, 1000 );
+				} );
+
+
+				// 캡쳐 시작
+				$( "#captureBtn" ).on( "click", function() {
+					ugCapture.runCapture( function(canvas) {
+						if ( navigator.msSaveBlob ) {
+							navigator.msSaveBlob( canvas.msToBlob(), 'map.png' );
+						} else {
+							canvas.toBlob( function(blob) {
+								saveAs( blob, 'map.png' );
+							} );
+						}
+					} );
+				} );
+
+
+				// 캡쳐 모드 DIV 닫기
+				$( "#closeBtn" ).on( "click", function() {
+					if ( typeof ugCapture === "undefined" ) return false;
+					ugCapture.destroy();
+					$( "#print" ).hide();
+					$( "#print" ).width( '0%' );
+					$( "#print" ).height( '0%' );
+					$( "#print" ).find( ".cBox" ).empty();
+				} );
+			} );
+</script>
+</html>
