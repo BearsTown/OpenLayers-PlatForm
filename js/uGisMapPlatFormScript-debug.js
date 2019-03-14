@@ -5,7 +5,7 @@
  * 
  * Author : LeeJaeHyuk
  * 
- * Date : 2019.01.10
+ * Date : 2019.03.14
  */
 ( function(window, jQuery) {
 	"use strict";
@@ -17,7 +17,7 @@
 
 	window._$ = jQuery;
 	window.ugmp = {
-		version : "1.4.0",
+		version : "1.4.1",
 		toc : {},
 		util : {},
 		layer : {},
@@ -733,9 +733,10 @@
 					useProxy : true,
 					version : ugLayer_.version,
 					identifier : ugLayer_.identifier,
-					projection : ugLayer_.projection,
+					format : ugLayer_._this.format,
 					serviceURL : ugLayer_.getServiceURL(),
-					boundingBox : ugLayer_.getBoundingBox()
+					boundingBox : ugLayer_.getBoundingBox(),
+					useScaleRefresh : ugLayer_.useScaleRefresh
 				} );
 			},
 			add : function(ugWcsLayer_) {
@@ -5650,9 +5651,9 @@
 	 * @param opt_options.format {String} 이미지 포맷. Default is `image/jpeg`.
 	 * @param opt_options.version {String} WCS 버전. Default is `1.1.1`.
 	 * @param opt_options.identifier {String} 레이어 아이디.
-	 * @param opt_options.projection {String} 좌표계. Default is `EPSG:3857`.
 	 * @param opt_options.coverageId {String} coverageId.
 	 * @param opt_options.boundingBox {Array} boundingBox.
+	 * @param opt_options.useScaleRefresh {Boolean} 이미지 해상도 자동 새로고침 사용 여부. Default is `false`.
 	 * 
 	 * @Extends {ugmp.layer.uGisLayerDefault}
 	 * 
@@ -5665,9 +5666,9 @@
 		this.format = null;
 		this.version = null;
 		this.identifier = null;
-		this.projection = null;
 		this.coverageId = null;
 		this.boundingBox = null;
+		this.useScaleRefresh = null;
 
 		this.key_moveEnd = null;
 		this.key_changeView = null;
@@ -5689,7 +5690,8 @@
 			_self.format = ( options.format !== undefined ) ? options.format : "image/jpeg";
 			_self.identifier = ( options.identifier !== undefined ) ? options.identifier : "";
 			_self.coverageId = ( options.coverageId !== undefined ) ? options.coverageId : "";
-			_self.projection = ( options.projection !== undefined ) ? options.projection : "EPSG:3857";
+			_self.useScaleRefresh = ( typeof ( options.useScaleRefresh ) === "boolean" ) ? options.useScaleRefresh : false;
+
 			_self.boundingBox = _self._setBoundingBox( options.boundingBox );
 
 			_self.olLayer = new ol.layer.Image( {} );
@@ -5704,7 +5706,7 @@
 			update : _self._update,
 			version : _self.version,
 			identifier : _self.identifier,
-			projection : _self.projection,
+			useScaleRefresh : _self.useScaleRefresh,
 			setBoundingBox : _self._setBoundingBox,
 			getBoundingBox : _self.getBoundingBox
 		} );
@@ -5743,12 +5745,14 @@
 	 * Map을 설정한다. 해당 Map을 통해 Coverage의 BOUNDINGBOX를 갱신한다.
 	 * 
 	 * @param olMap {ol.Map}
-	 * @param olMap {ol.Map}
+	 * @param load {Function} 로드 함수.
 	 */
 	ugmp.layer.uGisWCSLayer.prototype.setMap = function(olMap_, load_) {
 		var _self = this._this || this;
 
-		if ( olMap_ ) {
+		_self._update( olMap_.getView(), load_ );
+
+		if ( olMap_ && _self.useScaleRefresh ) {
 			ol.Observable.unByKey( _self.key_moveEnd );
 
 			_self.key_moveEnd = olMap_.on( "moveend", function() {
@@ -5759,6 +5763,20 @@
 		_self.key_changeView = olMap_.once( "change:view", function() {
 			_self.setMap( olMap_, load_ );
 		} );
+	};
+
+
+	/**
+	 * WCS Param을 설정하고 갱신한다.
+	 * 
+	 * @private
+	 * 
+	 * @param view {ol.View} View 객체.
+	 * @param load {Function} 로드 함수.
+	 */
+	ugmp.layer.uGisWCSLayer.prototype._ = function(view_, load_) {
+		var _self = this._this || this;
+
 	};
 
 
@@ -5796,19 +5814,34 @@
 			delete params.COVERAGEID;
 		}
 
-		var poly1 = turf.polygon( [ [ [ viewExtent[ 0 ], viewExtent[ 1 ] ], [ viewExtent[ 0 ], viewExtent[ 3 ] ], [ viewExtent[ 2 ], viewExtent[ 3 ] ],
-				[ viewExtent[ 2 ], viewExtent[ 1 ] ], [ viewExtent[ 0 ], viewExtent[ 1 ] ] ] ] );
+		if ( _self.useScaleRefresh ) {
+			var poly1 = turf.polygon( [ [ [ viewExtent[ 0 ], viewExtent[ 1 ] ], [ viewExtent[ 0 ], viewExtent[ 3 ] ], [ viewExtent[ 2 ], viewExtent[ 3 ] ],
+					[ viewExtent[ 2 ], viewExtent[ 1 ] ], [ viewExtent[ 0 ], viewExtent[ 1 ] ] ] ] );
 
-		var poly2 = turf.polygon( [ [ [ _self.boundingBox[ 0 ], _self.boundingBox[ 1 ] ], [ _self.boundingBox[ 0 ], _self.boundingBox[ 3 ] ],
-				[ _self.boundingBox[ 2 ], _self.boundingBox[ 3 ] ], [ _self.boundingBox[ 2 ], _self.boundingBox[ 1 ] ],
-				[ _self.boundingBox[ 0 ], _self.boundingBox[ 1 ] ] ] ] );
+			var poly2 = turf.polygon( [ [ [ _self.boundingBox[ 0 ], _self.boundingBox[ 1 ] ], [ _self.boundingBox[ 0 ], _self.boundingBox[ 3 ] ],
+					[ _self.boundingBox[ 2 ], _self.boundingBox[ 3 ] ], [ _self.boundingBox[ 2 ], _self.boundingBox[ 1 ] ],
+					[ _self.boundingBox[ 0 ], _self.boundingBox[ 1 ] ] ] ] );
 
-		var intersection = turf.intersect( poly1, poly2 );
-		var intersectCoordinate = intersection.geometry.coordinates[ 0 ];
-		var intersectExtent = [ intersectCoordinate[ 0 ][ 0 ], intersectCoordinate[ 0 ][ 1 ], intersectCoordinate[ 2 ][ 0 ], intersectCoordinate[ 2 ][ 1 ] ];
+			var intersection = turf.intersect( poly1, poly2 );
+			var intersectCoordinate = intersection.geometry.coordinates[ 0 ];
+			var intersectExtent = [ intersectCoordinate[ 0 ][ 0 ], intersectCoordinate[ 0 ][ 1 ], intersectCoordinate[ 2 ][ 0 ], intersectCoordinate[ 2 ][ 1 ] ];
 
-		params.BOUNDINGBOX = ol.proj.transformExtent( intersectExtent, "EPSG:4326", view_.getProjection() );
-		params.BOUNDINGBOX.push( view_.getProjection().getCode() );
+			if ( intersectExtent[ 0 ] > intersectExtent[ 2 ] ) {
+				var temp = intersectExtent[ 2 ];
+				intersectExtent[ 2 ] = intersectExtent[ 0 ];
+				intersectExtent[ 0 ] = temp;
+			}
+
+			if ( intersectExtent[ 1 ] > intersectExtent[ 3 ] ) {
+				var temp = intersectExtent[ 3 ];
+				intersectExtent[ 3 ] = intersectExtent[ 1 ];
+				intersectExtent[ 1 ] = temp;
+			}
+
+			params.BOUNDINGBOX = intersectExtent;
+		}
+
+		params.BOUNDINGBOX.push( "EPSG:4326" );
 
 		if ( _self.useProxy ) {
 			_self.getGetCoverageURL = ugmp.uGisConfig.getProxy() + ugmp.util.uGisUtil.appendParams( _self.getServiceURL(), params );
@@ -5820,7 +5853,8 @@
 
 		_self.olLayer.setSource( new ol.source.ImageStatic( {
 			url : _self.getGetCoverageURL,
-			projection : view_.getProjection(),
+			// projection : view_.getProjection(),
+			projection : "EPSG:4326",
 			imageExtent : params.BOUNDINGBOX,
 			imageLoadFunction : function(image, src) {
 				var imageElement = image.getImage();
@@ -6332,6 +6366,7 @@
 	 * @param opt_options.uGisMap {ugmp.uGisMap} {@link ugmp.uGisMap} 객체.
 	 * @param opt_options.uGisLayer {ugmp.layer} {@link ugmp.layer} 객체.
 	 * @param opt_options.tocListDivId {String} TOC가 생성될 DIV ID.
+	 * @param opt_options.menuOpen {Boolean} 메뉴 초기 Open 여부.
 	 * @param opt_options.groupOpen {Boolean} 그룹레이어(폴더) 초기 Open 여부.
 	 * @param opt_options.legendOpen {Boolean} 범례 이미지 초기 Open 여부.
 	 * 
@@ -6346,6 +6381,7 @@
 		this.tocTitle = null;
 		this.uGisMap = null;
 		this.uGisLayer = null;
+		this.menuOpen = null;
 		this.groupOpen = null;
 		this.legendOpen = null;
 		this.tocListDivId = null;
@@ -6367,6 +6403,7 @@
 			_self.tocKey = ( options.tocKey !== undefined ) ? options.tocKey : undefined;
 			_self.tocTitle = ( options.tocTitle !== undefined ) ? options.tocTitle : undefined;
 			_self.tocListDivId = ( options.tocListDivId !== undefined ) ? options.tocListDivId : undefined;
+			_self.menuOpen = ( typeof ( options.menuOpen ) === "boolean" ) ? options.menuOpen : true;
 			_self.groupOpen = ( typeof ( options.groupOpen ) === "boolean" ) ? options.groupOpen : true;
 			_self.legendOpen = ( typeof ( options.legendOpen ) === "boolean" ) ? options.legendOpen : true;
 
@@ -6505,6 +6542,10 @@
 		_collapseDiv.find( ".ztree" ).attr( "id", _self.tocDivId );
 
 		_$( "#" + _self.tocListDivId ).prepend( _tocDiv );
+		
+		if ( _self.menuOpen ) {
+			$( "#" + _collapseId ).collapse( "show" );
+		}
 	};
 
 
@@ -6700,7 +6741,7 @@
 			if ( treeNode[ "isLegend" ] && treeNode[ "LegendURL" ] ) {
 				aObj.empty();
 				aObj.css( "height", "auto" );
-				aObj.append( "<img src='" + treeNode[ "LegendURL" ] + "'>" );
+				aObj.append( "<img src='" + treeNode[ "LegendURL" ] + "' title='" + treeNode[ "name" ] +"'>" );
 			}
 		}
 

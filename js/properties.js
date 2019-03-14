@@ -753,7 +753,7 @@
 			},
 			{
 				name : 'Layer',
-				examples : [ PE.LAYER.WMS, PE.LAYER.WFS, PE.LAYER.WMTS, PE.LAYER.VECTOR, PE.LAYER.CLUSTER ]
+				examples : [ PE.LAYER.WMS, PE.LAYER.WFS, PE.LAYER.WCS, PE.LAYER.WMTS, PE.LAYER.VECTOR, PE.LAYER.CLUSTER ]
 			},
 			{
 				name : 'TOC',
