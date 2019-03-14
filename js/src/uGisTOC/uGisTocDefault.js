@@ -17,6 +17,7 @@
 	 * @param opt_options.uGisMap {ugmp.uGisMap} {@link ugmp.uGisMap} 객체.
 	 * @param opt_options.uGisLayer {ugmp.layer} {@link ugmp.layer} 객체.
 	 * @param opt_options.tocListDivId {String} TOC가 생성될 DIV ID.
+	 * @param opt_options.menuOpen {Boolean} 메뉴 초기 Open 여부.
 	 * @param opt_options.groupOpen {Boolean} 그룹레이어(폴더) 초기 Open 여부.
 	 * @param opt_options.legendOpen {Boolean} 범례 이미지 초기 Open 여부.
 	 * 
@@ -31,6 +32,7 @@
 		this.tocTitle = null;
 		this.uGisMap = null;
 		this.uGisLayer = null;
+		this.menuOpen = null;
 		this.groupOpen = null;
 		this.legendOpen = null;
 		this.tocListDivId = null;
@@ -52,6 +54,7 @@
 			_self.tocKey = ( options.tocKey !== undefined ) ? options.tocKey : undefined;
 			_self.tocTitle = ( options.tocTitle !== undefined ) ? options.tocTitle : undefined;
 			_self.tocListDivId = ( options.tocListDivId !== undefined ) ? options.tocListDivId : undefined;
+			_self.menuOpen = ( typeof ( options.menuOpen ) === "boolean" ) ? options.menuOpen : true;
 			_self.groupOpen = ( typeof ( options.groupOpen ) === "boolean" ) ? options.groupOpen : true;
 			_self.legendOpen = ( typeof ( options.legendOpen ) === "boolean" ) ? options.legendOpen : true;
 
@@ -190,6 +193,10 @@
 		_collapseDiv.find( ".ztree" ).attr( "id", _self.tocDivId );
 
 		_$( "#" + _self.tocListDivId ).prepend( _tocDiv );
+		
+		if ( _self.menuOpen ) {
+			$( "#" + _collapseId ).collapse( "show" );
+		}
 	};
 
 
@@ -385,7 +392,7 @@
 			if ( treeNode[ "isLegend" ] && treeNode[ "LegendURL" ] ) {
 				aObj.empty();
 				aObj.css( "height", "auto" );
-				aObj.append( "<img src='" + treeNode[ "LegendURL" ] + "'>" );
+				aObj.append( "<img src='" + treeNode[ "LegendURL" ] + "' title='" + treeNode[ "name" ] +"'>" );
 			}
 		}
 
