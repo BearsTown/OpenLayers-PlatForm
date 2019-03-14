@@ -485,9 +485,10 @@
 					useProxy : true,
 					version : ugLayer_.version,
 					identifier : ugLayer_.identifier,
-					projection : ugLayer_.projection,
+					format : ugLayer_._this.format,
 					serviceURL : ugLayer_.getServiceURL(),
-					boundingBox : ugLayer_.getBoundingBox()
+					boundingBox : ugLayer_.getBoundingBox(),
+					useScaleRefresh : ugLayer_.useScaleRefresh
 				} );
 			},
 			add : function(ugWcsLayer_) {
