@@ -112,30 +112,33 @@
         // var serviceContact =
 		// json["wfs:WFS_Capabilities"]["ows:ServiceProvider"]["ows:ServiceContact"]["#text"];
 
-        var featureType = json["wfs:WFS_Capabilities"]["FeatureTypeList"]["FeatureType"];
-        
         var layers = [];
-		if ( Array.isArray( featureType ) ) {
-			crs = featureType[0]["DefaultSRS"]["#text"];
-            
-            for (var i in featureType) {
+        var featureTypeList = json["wfs:WFS_Capabilities"]["FeatureTypeList"];
+        
+        if ( featureTypeList && featureTypeList["FeatureType"] ) {
+        	var featureType = featureTypeList["FeatureType"];
+        	
+        	if ( Array.isArray( featureType ) ) {
+    			crs = featureType[0]["DefaultSRS"]["#text"];
+                
+                for (var i in featureType) {
+                    var temp = {
+                        Title : featureType[i]["Title"]["#text"],
+                        Name : featureType[i]["Name"]["#text"]
+                    }
+                    layers.push( temp );
+                }
+                
+    		} else {
+    			crs = featureType["DefaultSRS"]["#text"];
+                
                 var temp = {
-                    Title : featureType[i]["Title"]["#text"],
-                    Name : featureType[i]["Name"]["#text"]
+                    Title : featureType["Title"]["#text"],
+                    Name : featureType["Name"]["#text"]
                 }
                 layers.push( temp );
-            }
-            
-		} else {
-			crs = featureType["DefaultSRS"]["#text"];
-            
-            var temp = {
-                Title : featureType["Title"]["#text"],
-                Name : featureType["Name"]["#text"]
-            }
-            layers.push( temp );
-		}
-                
+    		}
+    	}
         
         var metaData = {
             crs : crs,
