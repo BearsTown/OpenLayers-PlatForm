@@ -273,16 +273,19 @@
 					layer[ "open" ] = false;
 				}
 
-				layer[ "children" ].push( {
-					drag : false,
-					drop : false,
-					open : false,
-					nocheck : true,
-					isLegend : true,
-					dropInner : false,
-					LayerName : "leg_" + layer[ "LayerName" ],
-					LegendURL : layer[ "LegendURL" ]
-				} );
+				if ( layer[ "LayerName" ] && layer[ "LegendURL" ] ) {
+					layer[ "children" ].push( {
+						drag : false,
+						drop : false,
+						open : false,
+						nocheck : true,
+						isLegend : true,
+						dropInner : false,
+						name : layer[ "LayerName" ],
+						LayerName : "leg_" + layer[ "LayerName" ],
+						LegendURL : layer[ "LegendURL" ]
+					} );
+				}
 			}
 
 		}
