@@ -138,20 +138,6 @@
 	 * @param view {ol.View} View 객체.
 	 * @param load {Function} 로드 함수.
 	 */
-	ugmp.layer.uGisWCSLayer.prototype._ = function(view_, load_) {
-		var _self = this._this || this;
-
-	};
-
-
-	/**
-	 * WCS Param을 설정하고 갱신한다.
-	 * 
-	 * @private
-	 * 
-	 * @param view {ol.View} View 객체.
-	 * @param load {Function} 로드 함수.
-	 */
 	ugmp.layer.uGisWCSLayer.prototype._update = function(view_, load_) {
 		var _self = this._this || this;
 
