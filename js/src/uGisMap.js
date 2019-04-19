@@ -339,9 +339,7 @@
 	 * @return controls {Array.<ol.control.Control>}
 	 */
 	ugmp.uGisMap.prototype._createDefaultControls = function() {
-		var controls = [ new ol.control.Attribution( {
-			collapsible : false
-		} ), new ol.control.Rotate(), new ol.control.Zoom( {
+		var controls = [ new ol.control.Rotate(), new ol.control.Zoom( {
 			duration : 0
 		} ) ];
 

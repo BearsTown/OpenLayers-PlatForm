@@ -109,7 +109,9 @@
 
 		_self.apiMap = new ol.Map( {
 			layers : [],
-			controls : [],
+			controls : [ new ol.control.Attribution( {
+				collapsible : false
+			} ) ],
 			interactions : [],
 			target : target_,
 			view : new ol.View( {

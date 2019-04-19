@@ -54,7 +54,8 @@
 					id : "gray",
 					layer : new ol.layer.Tile( {
 						source : new ol.source.XYZ( {
-							url : grayURL
+							url : grayURL,
+							attributions : [ ol.source.OSM.ATTRIBUTION ]
 						} )
 					} ),
 					minZoom : 0,
@@ -115,7 +116,9 @@
 
 		_self.apiMap = new ol.Map( {
 			layers : [],
-			controls : [],
+			controls : [ new ol.control.Attribution( {
+				collapsible : false
+			} ) ],
 			interactions : [],
 			target : target_,
 			view : new ol.View( {
