@@ -1381,6 +1381,75 @@
             </ul>
         </li>
     
+        <li class="item" data-name="ugmp.baseMap.uGisBaseMapBing">
+            <span class="title">
+                <a href="ugmp.baseMap.uGisBaseMapBing.html">ugmp.baseMap.uGisBaseMapBing</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#checkIsAvailable" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#checkIsAvailable">checkIsAvailable</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#createBaseMap" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#createBaseMap">createBaseMap</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#getSyncData" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#getSyncData">getSyncData</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#getTypeProperties" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#getTypeProperties">getTypeProperties</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#getUsableKeys" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#getUsableKeys">getUsableKeys</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#init" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#init">init</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#isAvailables" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#isAvailables">isAvailables</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#isFactors" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#isFactors">isFactors</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#isWorlds" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#isWorlds">isWorlds</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#setMapType" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#setMapType">setMapType</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#syncMapFunc" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#syncMapFunc">syncMapFunc</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#updateSize" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#updateSize">updateSize</a>
+                </li>
+            
+            </ul>
+            <ul class="fires itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="ugmp.baseMap.uGisBaseMapCustom">
             <span class="title">
                 <a href="ugmp.baseMap.uGisBaseMapCustom.html">ugmp.baseMap.uGisBaseMapCustom</a>
@@ -3749,7 +3818,7 @@
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line44">line 44</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line46">line 46</a>
         </div>
         
     </div>
@@ -3762,21 +3831,23 @@
     <div class="description">
         <p>uGisMapPlatForm 배경지도 객체.</p>
 <p>다양하게 제공되는 지도 API나 WMTS 서비스를 배경지도로 사용할 수 있다.</p>
-<p>uGisMapPlatForm에서 기본적으로 내장한 배경지도 API는 다음과 같으며 API KEY가 정상적일 경우에만 사용할 수 있다.</p>
+<p>uGisMapPlatForm에서 기본적으로 내장한 배경지도 API는 다음과 같으며, API KEY가 정상적인 경우에만 사용할 수 있다.</p>
 <ol>
-<li><p>Google(normal, hybrid)</p>
+<li><p>Google(normal, satellite, hybrid) : 월 28,500건 무료.</p>
 </li>
-<li><p>OpenStreetMap(none, normal, gray)</p>
+<li><p>OpenStreetMap(none, normal, gray) : 무제한 무료.</p>
 </li>
-<li><p>Stamen(toner, terrain)</p>
+<li><p>Stamen(toner, terrain) : 무제한 무료.</p>
 </li>
-<li><p>vWorld(normal, hybrid, gray, midnight)</p>
+<li><p>vWorld(normal, satellite, hybrid, gray, midnight) : 무제한 무료.</p>
 </li>
-<li><p>바로E맵(normal, white, colorVision)</p>
+<li><p>바로E맵(normal, white, colorVision) : 무제한 무료.</p>
 </li>
-<li><p>네이버(normal, hybrid)</p>
+<li><p>네이버(normal, satellite, hybrid) : 2019년 12월 31일 까지 월 6,000,000건 무료.</p>
 </li>
-<li><p>다음(normal, hybrid)</p>
+<li><p>다음(normal, satellite, hybrid) : 월 600,000건 무료.</p>
+</li>
+<li><p>Bing(normal, aerial, hybrid, dark) : 1년 125,000건 무료.</p>
 </li>
 </ol>
     </div>
@@ -4018,7 +4089,7 @@
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line224">line 224</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line227">line 227</a>
         </div>
         
     </div>
@@ -4162,7 +4233,7 @@
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line389">line 389</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line392">line 392</a>
         </div>
         
     </div>
@@ -4280,7 +4351,7 @@
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line560">line 560</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line563">line 563</a>
         </div>
         
     </div>
@@ -4362,7 +4433,7 @@ opacity  배경지도 불투명도 값.
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line549">line 549</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line552">line 552</a>
         </div>
         
     </div>
@@ -4444,7 +4515,7 @@ nowBaseMapKey  현재 선택된 배경지도 키.
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line499">line 499</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line502">line 502</a>
         </div>
         
     </div>
@@ -4526,7 +4597,7 @@ nowBaseMapKey  현재 선택된 배경지도 키.
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line592">line 592</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line595">line 595</a>
         </div>
         
     </div>
@@ -4608,7 +4679,7 @@ visible  배경지도 ON/OFF 상태.
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line519">line 519</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line522">line 522</a>
         </div>
         
     </div>
@@ -4735,7 +4806,7 @@ visible  배경지도 ON/OFF 상태.
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line576">line 576</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line579">line 579</a>
         </div>
         
     </div>
@@ -4854,7 +4925,7 @@ visible  배경지도 ON/OFF 상태.
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line606">line 606</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line609">line 609</a>
         </div>
         
     </div>
@@ -4972,7 +5043,7 @@ visible  배경지도 ON/OFF 상태.
     
         
         <div class="tag-source">
-            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line625">line 625</a>
+            <a href="uGisBaseMap.js.html">uGisBaseMap/uGisBaseMap.js</a>, <a href="uGisBaseMap.js.html#line628">line 628</a>
         </div>
         
     </div>

@@ -11,7 +11,7 @@
 
 <div class="row">
 	<h3 class="col-sm-12">
-		<font style="vertical-align: inherit;"><font style="font-size: 20px; vertical-align: inherit;">uGisMapPlatForm 다운로드 (2019-03-14)</font></font>
+		<font style="vertical-align: inherit;"><font style="font-size: 20px; vertical-align: inherit;">uGisMapPlatForm 다운로드 (2019-04-19)</font></font>
 	</h3>
 </div>
 
@@ -24,12 +24,12 @@
 					<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Description</font></font></th>
 				</tr>
 				<tr>
-					<td><a href="../download/uGisMapPlatForm v1.4.1-dist.zip"> <font style="vertical-align: inherit;">uGisMapPlatForm v1.4.1-dist.zip</font>
+					<td><a href="../download/uGisMapPlatForm v1.4.2-dist.zip"> <font style="vertical-align: inherit;">uGisMapPlatForm v1.4.2-dist.zip</font>
 					</a></td>
 					<td><font style="vertical-align: inherit;">라이브러리의 전체 빌드, 디버그 빌드 및 라이브러리 CSS가 포함됩니다.</font></td>
 				</tr>
 				<tr>
-					<td><a href="../download/uGisMapPlatForm v1.4.1.zip"> <font style="vertical-align: inherit;">uGisMapPlatForm v1.4.1.zip</font>
+					<td><a href="../download/uGisMapPlatForm v1.4.2.zip"> <font style="vertical-align: inherit;">uGisMapPlatForm v1.4.2.zip</font>
 					</a></td>
 					<td><font style="vertical-align: inherit;">위의 모든 예제, API 문서 및 소스를 포함합니다.</font></td>
 				</tr>

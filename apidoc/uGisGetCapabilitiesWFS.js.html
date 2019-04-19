@@ -1381,6 +1381,75 @@
             </ul>
         </li>
     
+        <li class="item" data-name="ugmp.baseMap.uGisBaseMapBing">
+            <span class="title">
+                <a href="ugmp.baseMap.uGisBaseMapBing.html">ugmp.baseMap.uGisBaseMapBing</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#checkIsAvailable" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#checkIsAvailable">checkIsAvailable</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#createBaseMap" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#createBaseMap">createBaseMap</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#getSyncData" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#getSyncData">getSyncData</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#getTypeProperties" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#getTypeProperties">getTypeProperties</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#getUsableKeys" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#getUsableKeys">getUsableKeys</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#init" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#init">init</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#isAvailables" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#isAvailables">isAvailables</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#isFactors" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#isFactors">isFactors</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#isWorlds" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#isWorlds">isWorlds</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#setMapType" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#setMapType">setMapType</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#syncMapFunc" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#syncMapFunc">syncMapFunc</a>
+                </li>
+            
+                <li data-name="ugmp.baseMap.uGisBaseMapBing#updateSize" class="">
+                    <a href="ugmp.baseMap.uGisBaseMapBing.html#updateSize">updateSize</a>
+                </li>
+            
+            </ul>
+            <ul class="fires itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="ugmp.baseMap.uGisBaseMapCustom">
             <span class="title">
                 <a href="ugmp.baseMap.uGisBaseMapCustom.html">ugmp.baseMap.uGisBaseMapCustom</a>
@@ -3839,30 +3908,33 @@
         // var serviceContact =
 		// json["wfs:WFS_Capabilities"]["ows:ServiceProvider"]["ows:ServiceContact"]["#text"];
 
-        var featureType = json["wfs:WFS_Capabilities"]["FeatureTypeList"]["FeatureType"];
-        
         var layers = [];
-		if ( Array.isArray( featureType ) ) {
-			crs = featureType[0]["DefaultSRS"]["#text"];
-            
-            for (var i in featureType) {
+        var featureTypeList = json["wfs:WFS_Capabilities"]["FeatureTypeList"];
+        
+        if ( featureTypeList && featureTypeList["FeatureType"] ) {
+        	var featureType = featureTypeList["FeatureType"];
+        	
+        	if ( Array.isArray( featureType ) ) {
+    			crs = featureType[0]["DefaultSRS"]["#text"];
+                
+                for (var i in featureType) {
+                    var temp = {
+                        Title : featureType[i]["Title"]["#text"],
+                        Name : featureType[i]["Name"]["#text"]
+                    }
+                    layers.push( temp );
+                }
+                
+    		} else {
+    			crs = featureType["DefaultSRS"]["#text"];
+                
                 var temp = {
-                    Title : featureType[i]["Title"]["#text"],
-                    Name : featureType[i]["Name"]["#text"]
+                    Title : featureType["Title"]["#text"],
+                    Name : featureType["Name"]["#text"]
                 }
                 layers.push( temp );
-            }
-            
-		} else {
-			crs = featureType["DefaultSRS"]["#text"];
-            
-            var temp = {
-                Title : featureType["Title"]["#text"],
-                Name : featureType["Name"]["#text"]
-            }
-            layers.push( temp );
-		}
-                
+    		}
+    	}
         
         var metaData = {
             crs : crs,
