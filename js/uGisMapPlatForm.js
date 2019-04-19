@@ -74,6 +74,7 @@
 
 		srcPath + "/uGisBaseMap/uGisBaseMapDefault.js",
 		srcPath + "/uGisBaseMap/uGisBaseMapOSM.js",
+		srcPath + "/uGisBaseMap/uGisBaseMapBing.js",
 		srcPath + "/uGisBaseMap/uGisBaseMapDaum.js",
 		srcPath + "/uGisBaseMap/uGisBaseMapNaver.js",
 		srcPath + "/uGisBaseMap/uGisBaseMapVWorld.js",

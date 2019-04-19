@@ -6,21 +6,23 @@
 	 * 
 	 * 다양하게 제공되는 지도 API나 WMTS 서비스를 배경지도로 사용할 수 있다.
 	 * 
-	 * uGisMapPlatForm에서 기본적으로 내장한 배경지도 API는 다음과 같으며 API KEY가 정상적일 경우에만 사용할 수 있다.
+	 * uGisMapPlatForm에서 기본적으로 내장한 배경지도 API는 다음과 같으며, API KEY가 정상적인 경우에만 사용할 수 있다.
 	 * 
-	 * 1. Google(normal, hybrid)
+	 * 1. Google(normal, satellite, hybrid) : 월 28,500건 무료.
 	 * 
-	 * 2. OpenStreetMap(none, normal, gray)
+	 * 2. OpenStreetMap(none, normal, gray) : 무제한 무료.
 	 * 
-	 * 3. Stamen(toner, terrain)
+	 * 3. Stamen(toner, terrain) : 무제한 무료.
 	 * 
-	 * 4. vWorld(normal, hybrid, gray, midnight)
+	 * 4. vWorld(normal, satellite, hybrid, gray, midnight) : 무제한 무료.
 	 * 
-	 * 5. 바로E맵(normal, white, colorVision)
+	 * 5. 바로E맵(normal, white, colorVision) : 무제한 무료.
 	 * 
-	 * 6. 네이버(normal, hybrid)
+	 * 6. 네이버(normal, satellite, hybrid) : 2019년 12월 31일 까지 월 6,000,000건 무료.
 	 * 
-	 * 7. 다음(normal, hybrid)
+	 * 7. 다음(normal, satellite, hybrid) : 월 600,000건 무료.
+	 * 
+	 * 8. Bing(normal, aerial, hybrid, dark) : 1년 125,000건 무료.
 	 * 
 	 * @example
 	 * 
@@ -73,6 +75,7 @@
 			}
 
 			_self.addBaseMapType( "osm", new ugmp.baseMap.uGisBaseMapOSM() );
+			_self.addBaseMapType( "bing", new ugmp.baseMap.uGisBaseMapBing() );
 			_self.addBaseMapType( "daum", new ugmp.baseMap.uGisBaseMapDaum() );
 			_self.addBaseMapType( "naver", new ugmp.baseMap.uGisBaseMapNaver() );
 			_self.addBaseMapType( "vWorld", new ugmp.baseMap.uGisBaseMapVWorld() );
