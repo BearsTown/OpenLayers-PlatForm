@@ -3991,7 +3991,7 @@
 </div>
 
     <div class="main">
-        <h1 class="page-title" data-filename="uGisDescribeFeatureType.js.html">Source: uGisService/uGisDescribeFeatureType.js</h1>
+        <h1 class="page-title" data-filename="ugmp.baseMap.uGisBaseMapTMS_vWorld.html">Class: uGisBaseMapTMS_vWorld</h1>
         <div id="latest-check" class="alert alert-warning alert-dismissible" role="alert" style="display:none">
           <button id="latest-dismiss" type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           This documentation is for OpenLayers v<span id="package-version">function version() {
@@ -4002,213 +4002,1746 @@
         
 
 
+
+<section>
     
-    <section>
-        <article>
-            <pre class="prettyprint source"><code>( function() {
-	"use strict";
+<header>
+    <h2>
+        <span class="ancestors"><a href="ugmp.html">ugmp</a><a href="ugmp.baseMap.html">.baseMap</a>.</span>uGisBaseMapTMS_vWorld
+    </h2>
+    
+</header>  
 
-	/**
-	 * WFS DescribeFeatureType 객체.
-	 * 
-	 * OGC 표준의 WFS DescribeFeatureType 서비스를 요청하는 객체.
-	 * 
-	 * @constructor
-	 * 
-	 * @example
-	 * 
-	 * &lt;pre>
-	 * var ugDescribeFeatureType = new ugmp.service.uGisDescribeFeatureType( {
-	 * 	useProxy : true,
-	 * 	version : '1.1.0',
-	 * 	serviceURL : 'url',
-	 * 	dataViewId : ugMap.getDataViewId(),
-	 * 	typeName : 'LAYER_NAME'
-	 * } );
-	 * 
-	 * ugDescribeFeatureType.then( function(res_) {
-	 * 	if ( res_.state ) {
-	 * 		console.log( res_.data );
-	 * 	}
-	 * } );
-	 * &lt;/pre>
-	 * 
-	 * @param opt_options {Object}
-	 * @param opt_options.version {String} 요청 버전. Default is `1.1.0`.
-	 * @param opt_options.useProxy {Boolean} 프록시 사용여부. Default is `true`.
-	 * @param opt_options.serviceURL {String} 서비스 URL. Default is `""`.
-	 * @param opt_options.dataViewId {String} View ID. Default is `""`.
-	 * 
-	 * @return {jQuery.Deferred} jQuery.Deferred.
-	 * 
-	 * @class
-	 */
-	ugmp.service.uGisDescribeFeatureType = ( function(opt_options) {
-		var _self = this;
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+<dt>
+    <div class="nameContainer">
+        <div class="anchor" id="uGisBaseMapTMS_vWorld">
+        </div>
+        <h4 class="name">
+            
+            new ugmp.baseMap.uGisBaseMapTMS_vWorld<span class="signature">(opt_options)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapTMS_vWorld.js.html">uGisBaseMap/uGisBaseMapTMS_vWorld.js</a>, <a href="uGisBaseMapTMS_vWorld.js.html#line19">line 19</a>
+        </div>
+        
+    </div>
 
-		this.version = null;
-		this.useProxy = null;
-		this.typeName = null;
-		this.serviceURL = null;
-		this.dataViewId = null;
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>TMS_vWorld 배경지도 객체.</p>
+<p>vWorld 배경지도를 특정 좌표계로 설정하여 TMS 배경지도로 사용할 수 있다.</p>
+    </div>
+    
 
-		this.promise = null;
+    
+    
+    
+    
+    
+        
 
-
-		/**
-		 * Initialize
-		 */
-		( function() {
-
-			var options = opt_options || {};
-
-			_self.version = ( options.version !== undefined ) ? options.version : "1.1.0";
-			_self.useProxy = ( options.useProxy !== undefined ) ? options.useProxy : true;
-			_self.typeName = ( options.typeName !== undefined ) ? options.typeName : "";
-			_self.dataViewId = ( options.dataViewId !== undefined ) ? options.dataViewId : "";
-			_self.serviceURL = ( typeof ( options.serviceURL ) === "string" ) ? options.serviceURL : "";
-
-			_self._callAjax();
-
-		} )();
-		// END Initialize
-
-
-		return _self.promise;
-
-	} );
-
-
-	/**
-	 * DescribeFeatureType OGC 표준 속성.
-	 * 
-	 * @private
-	 * 
-	 * @retrun attribute {Object}
-	 */
-	ugmp.service.uGisDescribeFeatureType.prototype._getAttribute = function() {
-		var attribute = {
-			SERVICE : "WFS",
-			VERSION : this.version,
-			REQUEST : "DescribeFeatureType",
-			TYPENAME : this.typeName
-		};
-
-		return attribute;
-	};
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>opt_options</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
 
 
-	/**
-	 * DescribeFeatureType 요청.
-	 * 
-	 * @private
-	 * 
-	 * @return promise
-	 */
-	ugmp.service.uGisDescribeFeatureType.prototype._callAjax = function() {
-		var _self = this;
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                
+                
 
-		_self.promise = _$.Deferred();
-
-		var url = ugmp.util.uGisUtil.appendParams( _self.serviceURL, _self._getAttribute() );
-
-		if ( _self.useProxy ) {
-			url = ugmp.uGisConfig.getProxy() + url;
-		}
-
-		var response = new ugmp.uGisHttp.requestData( {
-			url : url,
-			type : "GET",
-			loading : true,
-			contentType : "",
-			dataType : "XML",
-			dataViewId : _self.dataViewId,
-		} );
-
-		response.then( function(response_) {
-			// -To do : response가 text일 경우 처리.
-			var resolveData = {
-				state : false,
-				message : undefined,
-				data : {
-					xmlJson : undefined,
-					document : response_,
-					serviceMetaData : undefined
-				}
-			};
-
-			try {
-				var xmlJson = ugmp.util.uGisUtil.xmlToJson( response_ );
-
-				if ( response_.childNodes[ 0 ].nodeName === "ogc:ServiceExceptionReport" || response_.childNodes[ 0 ].nodeName === "ServiceExceptionReport" ) {
-					var message = xmlJson[ "ogc:ServiceExceptionReport" ][ "ogc:ServiceException" ][ "#text" ];
-					resolveData.state = false;
-					resolveData.message = "ServiceExceptionReport : \n" + message;
-				} else if ( response_.childNodes[ 0 ].nodeName === "ows:ExceptionReport" || response_.childNodes[ 0 ].nodeName === "ExceptionReport" ) {
-					var message = xmlJson[ "ows:ExceptionReport" ][ "ows:Exception" ][ "ows:ExceptionText" ][ "#text" ];
-					resolveData.state = false;
-					resolveData.message = "ExceptionReport : \n" + message;
-				} else {
-					resolveData.state = true;
-					resolveData.data.xmlJson = xmlJson;
-					resolveData.data.serviceMetaData = _self._getServiceMetaData( xmlJson );
-				}
-
-				_self.promise.resolveData = resolveData;
-				_self.promise.resolve( resolveData );
-
-			} catch ( e ) {
-				_self.promise.reject( e );
-			}
-
-		}, function(result_) {
-			_self.promise.reject( result_ );
-		} );
-	};
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>baseCode</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
 
 
-	/**
-	 * DescribeFeatureType 메타데이터.
-	 * 
-	 * @private
-	 * 
-	 * @return metaData {Object} 메타데이터
-	 */
-	ugmp.service.uGisDescribeFeatureType.prototype._getServiceMetaData = function(xmlJson_) {
-		var _self = this;
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>베이스맵의 코드명 (언더바 기준). Default is <code>TMS</code>.</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>projection</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
 
-		var json = xmlJson_;
 
-		var sequence = {};
-		var findGeomType = false;
-		var geometryName = "the_geom";
-		var tempSequence = json[ "xsd:schema" ][ "xsd:complexType" ][ "xsd:complexContent" ][ "xsd:extension" ][ "xsd:sequence" ][ "xsd:element" ];
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>베이스맵 좌표계. Default is <code>EPSG:3857</code>.</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
 
-		for ( var i in tempSequence ) {
-			var name = tempSequence[ i ][ "@attributes" ][ "name" ];
-			var type = tempSequence[ i ][ "@attributes" ][ "type" ];
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
 
-			if ( !findGeomType ) {
-				if ( type.split( ":" )[ 0 ] === "gml" ) {
-					findGeomType = true;
-					geometryName = name;
-					continue;
-				}
-			}
+    
+    
 
-			sequence[ name ] = type.split( ":" )[ 1 ];
-		}
+    
 
-		return {
-			sequence : sequence,
-			geometryName : geometryName
-		}
-	};
+    
+    
+    
+    
+    
+    
+    
+</dd>
 
-} )();
-</code></pre>
-        </article>
-    </section>
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Extends</h3>
+        
+        <ul>
+            <li><a href="ugmp.baseMap.uGisBaseMapDefault.html">ugmp.baseMap.uGisBaseMapDefault</a></li>
+        </ul>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="checkIsAvailable">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#checkIsAvailable">inherited</a></span>
+            
+            checkIsAvailable<span class="signature">(script)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line178">line 178</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>API 사용 가능 여부를 설정한다.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>script</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>API 사용 테스트 스크립트.</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <div class="anchor" id="createBaseMap">
+        </div>
+        <h4 class="name">
+            
+            createBaseMap<span class="signature">(target, type)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapTMS_vWorld.js.html">uGisBaseMap/uGisBaseMapTMS_vWorld.js</a>, <a href="uGisBaseMapTMS_vWorld.js.html#line179">line 179</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>vWorld 맵 생성</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>target</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>베이스맵 DIV ID.</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>배경지도 타입.</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="getApiMap">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#getApiMap">inherited</a></span>
+            
+            getApiMap<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Object}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line277">line 277</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>배경지도의 API 객체를 가져온다.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+<h5>Returns:</h5>
+apiMap  배경지도의 API 객체.
+<br />
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="getSyncData">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#getSyncData">inherited</a></span>
+            
+            getSyncData<span class="signature">(evt)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Object}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line219">line 219</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>동기화 데이터.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>evt</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>ol3 change:resolution, change:center</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+<h5>Returns:</h5>
+현재 View의 동기화 데이터.
+<br />
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="getTypeProperties">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#getTypeProperties">inherited</a></span>
+            
+            <span class="type-signature abstract">abstract</span>getTypeProperties<span class="signature">(type)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Object}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line155">line 155</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>타입에 해당하는 속성 정보 가져온다.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>배경지도 타입.</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+<h5>Returns:</h5>
+해당 타입 속성
+<br />
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="getUsableKeys">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#getUsableKeys">inherited</a></span>
+            
+            getUsableKeys<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Array.&lt;String>}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line195">line 195</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>사용 가능한 타입(키) 리스트를 가져온다.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+<h5>Returns:</h5>
+사용 가능한 타입(키) 리스트를.
+<br />
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="isAvailables">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#isAvailables">inherited</a></span>
+            
+            isAvailables<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Boolean}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line244">line 244</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>베이스맵 사용 가능 여부.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+<h5>Returns:</h5>
+베이스맵 사용 가능 여부.
+<br />
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="isFactors">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#isFactors">inherited</a></span>
+            
+            isFactors<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Boolean}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line266">line 266</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>좌표계 별 zoomFactor 차이를 맞추기 위한 factor 사용 여부.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+<h5>Returns:</h5>
+좌표계 별 zoomFactor 차이를 맞추기 위한 factor 사용 여부.
+<br />
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="isWorlds">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#isWorlds">inherited</a></span>
+            
+            isWorlds<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Boolean}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line255">line 255</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>세계 좌표 여부.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+<h5>Returns:</h5>
+세계 좌표 여부.
+<br />
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <div class="anchor" id="setMapType">
+        </div>
+        <h4 class="name">
+            
+            setMapType<span class="signature">(type)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapTMS_vWorld.js.html">uGisBaseMap/uGisBaseMapTMS_vWorld.js</a>, <a href="uGisBaseMapTMS_vWorld.js.html#line207">line 207</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>배경지도 타입을 설정한다.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>배경지도 타입.</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="syncMapCenter">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#syncMapCenter">inherited</a></span>
+            
+            <span class="type-signature abstract">abstract</span>syncMapCenter<span class="signature">(evt)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line111">line 111</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>지도 화면 이동 이벤트 동기화.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>evt</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <change:center></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="syncMapRotation">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#syncMapRotation">inherited</a></span>
+            
+            <span class="type-signature abstract">abstract</span>syncMapRotation<span class="signature">(evt)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line122">line 122</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>지도 회전 이동 이벤트 동기화.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>evt</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <change:resolution|change:center></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
+        <div class="anchor" id="syncMapZoom">
+        </div>
+        <h4 class="name">
+            
+                <span class="inherited"><a href="ugmp.baseMap.uGisBaseMapDefault.html#syncMapZoom">inherited</a></span>
+            
+            <span class="type-signature abstract">abstract</span>syncMapZoom<span class="signature">(evt)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapDefault.js.html">uGisBaseMap/uGisBaseMapDefault.js</a>, <a href="uGisBaseMapDefault.js.html#line100">line 100</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>지도 줌 이동 이벤트 동기화.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>evt</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <change:resolution></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <div class="anchor" id="updateSize">
+        </div>
+        <h4 class="name">
+            
+            updateSize<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisBaseMapTMS_vWorld.js.html">uGisBaseMap/uGisBaseMapTMS_vWorld.js</a>, <a href="uGisBaseMapTMS_vWorld.js.html#line232">line 232</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>HTML element의 크기에 맞게 변경한다.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+    
+    
+</article>
+
+</section>  
 
 
 

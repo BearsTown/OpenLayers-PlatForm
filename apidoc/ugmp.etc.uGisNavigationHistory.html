@@ -3991,7 +3991,7 @@
 </div>
 
     <div class="main">
-        <h1 class="page-title" data-filename="uGisDescribeFeatureType.js.html">Source: uGisService/uGisDescribeFeatureType.js</h1>
+        <h1 class="page-title" data-filename="ugmp.etc.uGisNavigationHistory.html">Class: uGisNavigationHistory</h1>
         <div id="latest-check" class="alert alert-warning alert-dismissible" role="alert" style="display:none">
           <button id="latest-dismiss" type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           This documentation is for OpenLayers v<span id="package-version">function version() {
@@ -4002,213 +4002,415 @@
         
 
 
+
+<section>
     
-    <section>
-        <article>
-            <pre class="prettyprint source"><code>( function() {
-	"use strict";
+<header>
+    <h2>
+        <span class="ancestors"><a href="ugmp.html">ugmp</a><a href="ugmp.etc.html">.etc</a>.</span>uGisNavigationHistory
+    </h2>
+    
+</header>  
 
-	/**
-	 * WFS DescribeFeatureType 객체.
-	 * 
-	 * OGC 표준의 WFS DescribeFeatureType 서비스를 요청하는 객체.
-	 * 
-	 * @constructor
-	 * 
-	 * @example
-	 * 
-	 * &lt;pre>
-	 * var ugDescribeFeatureType = new ugmp.service.uGisDescribeFeatureType( {
-	 * 	useProxy : true,
-	 * 	version : '1.1.0',
-	 * 	serviceURL : 'url',
-	 * 	dataViewId : ugMap.getDataViewId(),
-	 * 	typeName : 'LAYER_NAME'
-	 * } );
-	 * 
-	 * ugDescribeFeatureType.then( function(res_) {
-	 * 	if ( res_.state ) {
-	 * 		console.log( res_.data );
-	 * 	}
-	 * } );
-	 * &lt;/pre>
-	 * 
-	 * @param opt_options {Object}
-	 * @param opt_options.version {String} 요청 버전. Default is `1.1.0`.
-	 * @param opt_options.useProxy {Boolean} 프록시 사용여부. Default is `true`.
-	 * @param opt_options.serviceURL {String} 서비스 URL. Default is `""`.
-	 * @param opt_options.dataViewId {String} View ID. Default is `""`.
-	 * 
-	 * @return {jQuery.Deferred} jQuery.Deferred.
-	 * 
-	 * @class
-	 */
-	ugmp.service.uGisDescribeFeatureType = ( function(opt_options) {
-		var _self = this;
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+<dt>
+    <div class="nameContainer">
+        <div class="anchor" id="uGisNavigationHistory">
+        </div>
+        <h4 class="name">
+            
+            new ugmp.etc.uGisNavigationHistory<span class="signature">(opt_options)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisNavigationHistory.js.html">etc/uGisNavigationHistory.js</a>, <a href="uGisNavigationHistory.js.html#line34">line 34</a>
+        </div>
+        
+    </div>
 
-		this.version = null;
-		this.useProxy = null;
-		this.typeName = null;
-		this.serviceURL = null;
-		this.dataViewId = null;
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>지도 이동 기록 정보 객체 (NavigationHistory).</p>
+    </div>
+    
 
-		this.promise = null;
+    
+    
+    
+    
+    
+        
 
-
-		/**
-		 * Initialize
-		 */
-		( function() {
-
-			var options = opt_options || {};
-
-			_self.version = ( options.version !== undefined ) ? options.version : "1.1.0";
-			_self.useProxy = ( options.useProxy !== undefined ) ? options.useProxy : true;
-			_self.typeName = ( options.typeName !== undefined ) ? options.typeName : "";
-			_self.dataViewId = ( options.dataViewId !== undefined ) ? options.dataViewId : "";
-			_self.serviceURL = ( typeof ( options.serviceURL ) === "string" ) ? options.serviceURL : "";
-
-			_self._callAjax();
-
-		} )();
-		// END Initialize
-
-
-		return _self.promise;
-
-	} );
-
-
-	/**
-	 * DescribeFeatureType OGC 표준 속성.
-	 * 
-	 * @private
-	 * 
-	 * @retrun attribute {Object}
-	 */
-	ugmp.service.uGisDescribeFeatureType.prototype._getAttribute = function() {
-		var attribute = {
-			SERVICE : "WFS",
-			VERSION : this.version,
-			REQUEST : "DescribeFeatureType",
-			TYPENAME : this.typeName
-		};
-
-		return attribute;
-	};
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>opt_options</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
 
 
-	/**
-	 * DescribeFeatureType 요청.
-	 * 
-	 * @private
-	 * 
-	 * @return promise
-	 */
-	ugmp.service.uGisDescribeFeatureType.prototype._callAjax = function() {
-		var _self = this;
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                
+                
 
-		_self.promise = _$.Deferred();
-
-		var url = ugmp.util.uGisUtil.appendParams( _self.serviceURL, _self._getAttribute() );
-
-		if ( _self.useProxy ) {
-			url = ugmp.uGisConfig.getProxy() + url;
-		}
-
-		var response = new ugmp.uGisHttp.requestData( {
-			url : url,
-			type : "GET",
-			loading : true,
-			contentType : "",
-			dataType : "XML",
-			dataViewId : _self.dataViewId,
-		} );
-
-		response.then( function(response_) {
-			// -To do : response가 text일 경우 처리.
-			var resolveData = {
-				state : false,
-				message : undefined,
-				data : {
-					xmlJson : undefined,
-					document : response_,
-					serviceMetaData : undefined
-				}
-			};
-
-			try {
-				var xmlJson = ugmp.util.uGisUtil.xmlToJson( response_ );
-
-				if ( response_.childNodes[ 0 ].nodeName === "ogc:ServiceExceptionReport" || response_.childNodes[ 0 ].nodeName === "ServiceExceptionReport" ) {
-					var message = xmlJson[ "ogc:ServiceExceptionReport" ][ "ogc:ServiceException" ][ "#text" ];
-					resolveData.state = false;
-					resolveData.message = "ServiceExceptionReport : \n" + message;
-				} else if ( response_.childNodes[ 0 ].nodeName === "ows:ExceptionReport" || response_.childNodes[ 0 ].nodeName === "ExceptionReport" ) {
-					var message = xmlJson[ "ows:ExceptionReport" ][ "ows:Exception" ][ "ows:ExceptionText" ][ "#text" ];
-					resolveData.state = false;
-					resolveData.message = "ExceptionReport : \n" + message;
-				} else {
-					resolveData.state = true;
-					resolveData.data.xmlJson = xmlJson;
-					resolveData.data.serviceMetaData = _self._getServiceMetaData( xmlJson );
-				}
-
-				_self.promise.resolveData = resolveData;
-				_self.promise.resolve( resolveData );
-
-			} catch ( e ) {
-				_self.promise.reject( e );
-			}
-
-		}, function(result_) {
-			_self.promise.reject( result_ );
-		} );
-	};
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>uGisMap</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ugmp.uGisMap.html">ugmp.uGisMap</a></span>
 
 
-	/**
-	 * DescribeFeatureType 메타데이터.
-	 * 
-	 * @private
-	 * 
-	 * @return metaData {Object} 메타데이터
-	 */
-	ugmp.service.uGisDescribeFeatureType.prototype._getServiceMetaData = function(xmlJson_) {
-		var _self = this;
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p><a href="ugmp.uGisMap.html"><code>ugmp.uGisMap</code></a> 객체.</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>hasNext</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
 
-		var json = xmlJson_;
 
-		var sequence = {};
-		var findGeomType = false;
-		var geometryName = "the_geom";
-		var tempSequence = json[ "xsd:schema" ][ "xsd:complexType" ][ "xsd:complexContent" ][ "xsd:extension" ][ "xsd:sequence" ][ "xsd:element" ];
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>다음 영역 존재 여부 CallBack.</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>hasPrevious</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
 
-		for ( var i in tempSequence ) {
-			var name = tempSequence[ i ][ "@attributes" ][ "name" ];
-			var type = tempSequence[ i ][ "@attributes" ][ "type" ];
 
-			if ( !findGeomType ) {
-				if ( type.split( ":" )[ 0 ] === "gml" ) {
-					findGeomType = true;
-					geometryName = name;
-					continue;
-				}
-			}
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>이전 영역 존재 여부 CallBack.</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
 
-			sequence[ name ] = type.split( ":" )[ 1 ];
-		}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
 
-		return {
-			sequence : sequence,
-			geometryName : geometryName
-		}
-	};
+    
+    
 
-} )();
-</code></pre>
-        </article>
-    </section>
+    
+
+    
+    
+    
+    
+    
+    
+    
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint">var ugNavigationHistory = new ugmp.etc.uGisNavigationHistory( {	uGisMap : ugMap,	hasNext : function(state_) {		console.log( state_ );	},	hasPrevious : function(state_) {		console.log( state_ );	}} );</pre>
+    
+
+    
+</dd>
+
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Members</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContaiasdfner">
+        <h4 class="name" id="clear">clear</h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>내용을 초기화 한다.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContaiasdfner">
+        <h4 class="name" id="moveNext">moveNext</h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>다음 영역으로 이동.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContaiasdfner">
+        <h4 class="name" id="movePrevious">movePrevious</h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>이전 영역으로 이동.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+    
+    
+    
+    
+</article>
+
+</section>  
 
 
 
