@@ -22,14 +22,6 @@
 
 			var options = opt_options || {};
 
-			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
-
-			_self.checkIsAvailable( "vworld.Layers.Base" );
-
-			if ( !_self.isAvailable ) {
-				return false;
-			}
-
 			options.isWorld = false;
 			options.isFactor = true;
 			options.baseCode = "vWorld";
@@ -84,18 +76,24 @@
 				}
 			};
 
-			_self.init( options );
+			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
+
+			_self.checkIsAvailable( "vworld.Layers.Base" );
+
+			if ( !_self.isAvailable ) {
+				return false;
+			}
 
 		} )();
 		// END initialize
 
 
 		/**
-		 * 지도 화면 이동 이벤트 동기화
+		 * 지도 줌 이동 이벤트 동기화.
 		 * 
-		 * @param evt {function} <change:resolution|change:center>
+		 * @param evt {function} <change:resolution>
 		 */
-		function syncMapFunc(evt_) {
+		function syncMapZoom(evt_) {
 			var syncData = _self.getSyncData( evt_ );
 
 			var vWorldCenter = ol.proj.transform( syncData[ "center" ], syncData[ "projection" ], "EPSG:900913" );
@@ -105,10 +103,37 @@
 			_self.apiMap.setCenter( vWorldCenter, vWorldLevel, false, false );
 		}
 
+		/**
+		 * 지도 화면 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:center>
+		 */
+		function syncMapCenter(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+
+			var vWorldCenter = ol.proj.transform( syncData[ "center" ], syncData[ "projection" ], "EPSG:900913" );
+			vWorldCenter = new OpenLayers.LonLat( syncData[ "center" ][ 0 ], syncData[ "center" ][ 1 ] );
+			var vWorldLevel = syncData[ "zoom" ];
+
+			_self.apiMap.setCenter( vWorldCenter, vWorldLevel, false, false );
+		}
+
+		/**
+		 * 지도 회전 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:rotation>
+		 */
+		function syncMapRotation(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			$( "#" + _self.target ).css( "transform", 'rotate(' + syncData[ "rotation" ] + 'rad)' );
+		}
+
 
 		return ugmp.util.uGisUtil.objectMerge( _super, {
 			_this : _self,
-			syncMapFunc : syncMapFunc
+			syncMapZoom : syncMapZoom,
+			syncMapCenter : syncMapCenter,
+			syncMapRotation : syncMapRotation
 		} );
 
 	} );
@@ -126,8 +151,10 @@
 	 * @param target {String} 베이스맵 DIV ID.
 	 * @param type {String} 배경지도 타입.
 	 */
-	ugmp.baseMap.uGisBaseMapVWorld.prototype.createBaseMap = function(target_, type_) {
+	ugmp.baseMap.uGisBaseMapVWorld.prototype.createBaseMap = function(target_, type_, loadEvents_) {
 		var _self = this._this || this;
+
+		_self.target = target_;
 
 		var options = {
 			units : "m",
@@ -138,7 +165,7 @@
 		};
 
 		_self.apiMap = new OpenLayers.Map( target_, options );
-		_self.setMapType( type_ );
+		_self.setMapType( type_, loadEvents_ );
 	};
 
 
@@ -149,7 +176,7 @@
 	 * 
 	 * @param type {String} 배경지도 타입.
 	 */
-	ugmp.baseMap.uGisBaseMapVWorld.prototype.setMapType = function(type_) {
+	ugmp.baseMap.uGisBaseMapVWorld.prototype.setMapType = function(type_, loadEvents_) {
 		var _self = this._this || this;
 
 		var type = type_;
@@ -164,6 +191,8 @@
 		for ( var i in layers ) {
 			_self.apiMap.addLayer( layers[ i ] );
 		}
+
+		_self._setTileLoadEvents( loadEvents_ );
 	};
 
 
@@ -192,6 +221,35 @@
 
 		if ( _self.apiMap.layers.length > 0 ) {
 			_self._removeAllLayer( _self.apiMap.layers );
+		}
+	};
+
+
+	/**
+	 * 배경지도 tile load events 설정.
+	 * 
+	 * @param loadEvents {Function} tile load events 함수.
+	 * 
+	 * @private
+	 */
+	ugmp.baseMap.uGisBaseMapVWorld.prototype._setTileLoadEvents = function(loadEvents_) {
+		var _self = this._this || this;
+
+		var layers = _self.apiMap.layers;
+
+		for ( var i in layers ) {
+			layers[ i ].events.register( "loadstart", layers[ i ], function() {
+				loadEvents_.call( this, true );
+			} );
+			layers[ i ].events.register( "loadend", layers[ i ], function() {
+				loadEvents_.call( this, false );
+			} );
+			layers[ i ].events.register( "tileloadstart", layers[ i ], function() {
+				loadEvents_.call( this, true );
+			} );
+			layers[ i ].events.register( "tileloaded", layers[ i ], function() {
+				loadEvents_.call( this, false );
+			} );
 		}
 	};
 

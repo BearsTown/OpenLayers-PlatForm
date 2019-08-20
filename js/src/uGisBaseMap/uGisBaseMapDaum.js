@@ -22,14 +22,6 @@
 
 			var options = opt_options || {};
 
-			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
-
-			_self.checkIsAvailable( "daum.maps.MapTypeId" );
-
-			if ( !_self.isAvailable ) {
-				return false;
-			}
-
 			options.isWorld = false;
 			options.isFactor = false;
 			options.baseCode = "daum";
@@ -52,33 +44,59 @@
 					maxZoom : 15
 				}
 			};
+			
+			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
 
-			_self.init( options );
+			_self.checkIsAvailable( "daum.maps.MapTypeId" );
 
+			if ( !_self.isAvailable ) {
+				return false;
+			}
+			
 		} )();
 		// END initialize
 
 
 		/**
-		 * 지도 화면 이동 이벤트 동기화
+		 * 지도 줌 이동 이벤트 동기화.
 		 * 
-		 * @param evt {function} <change:resolution|change:center>
+		 * @param evt {function} <change:resolution>
 		 */
-		function syncMapFunc(evt_) {
+		function syncMapZoom(evt_) {
 			var syncData = _self.getSyncData( evt_ );
-
-			var daumCenter = ol.proj.transform( syncData[ "center" ], syncData[ "projection" ], "EPSG:4326" );
 			var daumLevel = ( 15 - syncData[ "zoom" ] );
-
 			_self.apiMap.setLevel( daumLevel );
+			_self.apiMap.relayout();
+		}
+
+		/**
+		 * 지도 화면 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:center>
+		 */
+		function syncMapCenter(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			var daumCenter = ol.proj.transform( syncData[ "center" ], syncData[ "projection" ], "EPSG:4326" );
 			_self.apiMap.setCenter( new daum.maps.LatLng( daumCenter[ 1 ], daumCenter[ 0 ] ) );
 			_self.apiMap.relayout();
+		}
+
+		/**
+		 * 지도 회전 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:rotation>
+		 */
+		function syncMapRotation(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			$( "#" + _self.target ).css( "transform", 'rotate(' + syncData[ "rotation" ] + 'rad)' );
 		}
 
 
 		return ugmp.util.uGisUtil.objectMerge( _super, {
 			_this : _self,
-			syncMapFunc : syncMapFunc
+			syncMapZoom : syncMapZoom,
+			syncMapCenter : syncMapCenter,
+			syncMapRotation : syncMapRotation
 		} );
 
 	} );
@@ -96,8 +114,10 @@
 	 * @param target {String} 베이스맵 DIV ID.
 	 * @param type {String} 배경지도 타입.
 	 */
-	ugmp.baseMap.uGisBaseMapDaum.prototype.createBaseMap = function(target_, type_) {
+	ugmp.baseMap.uGisBaseMapDaum.prototype.createBaseMap = function(target_, type_, loadEvents_) {
 		var _self = this._this || this;
+
+		_self.target = target_;
 
 		var mapContainer = document.getElementById( target_ );
 		var daumMapOptions = {
@@ -106,7 +126,7 @@
 		};
 
 		_self.apiMap = new daum.maps.Map( mapContainer, daumMapOptions );
-		_self.setMapType( type_ );
+		_self.setMapType( type_, loadEvents_ );
 	};
 
 
@@ -117,7 +137,7 @@
 	 * 
 	 * @param type {String} 배경지도 타입.
 	 */
-	ugmp.baseMap.uGisBaseMapDaum.prototype.setMapType = function(type_) {
+	ugmp.baseMap.uGisBaseMapDaum.prototype.setMapType = function(type_, loadEvents_) {
 		var _self = this._this || this;
 
 		var type = type_;
@@ -127,6 +147,8 @@
 		}
 
 		_self.apiMap.setMapTypeId( _self.mapTypes[ type ][ "id" ] );
+
+		_self._setTileLoadEvents( loadEvents_ );
 	};
 
 
@@ -138,6 +160,29 @@
 	ugmp.baseMap.uGisBaseMapDaum.prototype.updateSize = function() {
 		var _self = this._this || this;
 		_self.apiMap.relayout();
+	};
+
+
+	/**
+	 * 배경지도 tile load events 설정.
+	 * 
+	 * @param loadEvents {Function} tile load events 함수.
+	 * 
+	 * @private
+	 */
+	ugmp.baseMap.uGisBaseMapDaum.prototype._setTileLoadEvents = function(loadEvents_) {
+		var _self = this._this || this;
+
+		// 다음 지도 API events tilesloadstart 미지원
+		kakao.maps.event.addListener( _self.apiMap, "bounds_changed", function() {
+			loadEvents_.call( this, true );
+
+			window.setTimeout( function() {
+				loadEvents_.call( this, false );
+			}, 500 );
+		} );
+
+		kakao.maps.event.trigger( _self.apiMap, "bounds_changed" );
 	};
 
 } )();

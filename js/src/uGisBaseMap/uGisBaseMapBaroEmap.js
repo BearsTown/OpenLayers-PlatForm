@@ -24,15 +24,7 @@
 
 			var options = opt_options || {};
 
-			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
-
-			_self.checkIsAvailable( "ngii.version" );
-
-			if ( !_self.isAvailables() ) {
-				return false;
-			}
-
-			_self.resolutions = [ 1954.597389, 977.2986945, 488.64934725, 244.324673625, 122.1623368125, 61.08116840625, 30.540584203125, 15.2702921015625,
+			options.resolutions = [ 1954.597389, 977.2986945, 488.64934725, 244.324673625, 122.1623368125, 61.08116840625, 30.540584203125, 15.2702921015625,
 					7.63514605078125, 3.817573025390625, 1.9087865126953125, 0.9543932563476563, 0.47719662817382813, 0.23859831408691406 ];
 
 			options.isWorld = false;
@@ -58,30 +50,58 @@
 				}
 			};
 
-			_self.init( options );
+			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
+
+			_self.checkIsAvailable( "ngii.version" );
+
+			if ( !_self.isAvailables() ) {
+				return false;
+			}
 
 		} )();
 		// END initialize
 
 
 		/**
-		 * 지도 화면 이동 이벤트 동기화
+		 * 지도 줌 이동 이벤트 동기화.
 		 * 
-		 * @param evt {Function} <change:resolution|change:center>
+		 * @param evt {function} <change:resolution>
 		 */
-		function syncMapFunc(evt_) {
+		function syncMapZoom(evt_) {
 			var syncData = _self.getSyncData( evt_ );
-
 			var baroEmapCenter = new OpenLayers.LonLat( syncData[ "center" ][ 0 ], syncData[ "center" ][ 1 ] );
 			var baroEmapLevel = syncData[ "zoom" ];
-
 			_self.apiMap.setCenter( baroEmapCenter, baroEmapLevel, false, false );
+		}
+
+		/**
+		 * 지도 화면 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:center>
+		 */
+		function syncMapCenter(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			var baroEmapCenter = new OpenLayers.LonLat( syncData[ "center" ][ 0 ], syncData[ "center" ][ 1 ] );
+			var baroEmapLevel = syncData[ "zoom" ];
+			_self.apiMap.setCenter( baroEmapCenter, baroEmapLevel, false, false );
+		}
+
+		/**
+		 * 지도 회전 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:rotation>
+		 */
+		function syncMapRotation(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			$( "#" + _self.target ).css( "transform", 'rotate(' + syncData[ "rotation" ] + 'rad)' );
 		}
 
 
 		return ugmp.util.uGisUtil.objectMerge( _super, {
 			_this : _self,
-			syncMapFunc : syncMapFunc
+			syncMapZoom : syncMapZoom,
+			syncMapCenter : syncMapCenter,
+			syncMapRotation : syncMapRotation
 		} );
 
 	} );
@@ -98,12 +118,14 @@
 	 * 
 	 * @param target {String} 베이스맵 DIV ID.
 	 * @param type {String} 배경지도 타입.
+	 * @param loadEvents {Function} tile load events 함수.
 	 */
-	ugmp.baseMap.uGisBaseMapBaroEmap.prototype.createBaseMap = function(target_, type_) {
+	ugmp.baseMap.uGisBaseMapBaroEmap.prototype.createBaseMap = function(target_, type_, loadEvents_) {
 		var _self = this._this || this;
 
+		_self.target = target_;
 		_self.apiMap = new ngii.map( target_ );
-		_self.setMapType( type_ );
+		_self.setMapType( type_, loadEvents_ );
 	};
 
 
@@ -113,8 +135,9 @@
 	 * @override
 	 * 
 	 * @param type {String} 배경지도 타입.
+	 * @param loadEvents {Function} tile load events 함수.
 	 */
-	ugmp.baseMap.uGisBaseMapBaroEmap.prototype.setMapType = function(type_) {
+	ugmp.baseMap.uGisBaseMapBaroEmap.prototype.setMapType = function(type_, loadEvents_) {
 		var _self = this._this || this;
 
 		var type = type_;
@@ -124,6 +147,8 @@
 		}
 
 		_self.apiMap._setMapMode( _self.mapTypes[ type ][ "id" ] );
+
+		_self._setTileLoadEvents( loadEvents_ );
 	};
 
 
@@ -139,21 +164,27 @@
 
 
 	/**
-	 * 타입에 해당하는 속성 정보 가져오기
+	 * 배경지도 tile load events 설정.
 	 * 
-	 * @override {ugmp.baseMap.uGisBaseMapDefault.prototype.getTypeProperties}
+	 * @param loadEvents {Function} tile load events 함수.
 	 * 
-	 * @param type {String} 배경지도 타입
-	 * 
-	 * @return {Object} 해당 타입 속성
+	 * @private
 	 */
-	ugmp.baseMap.uGisBaseMapBaroEmap.prototype.getTypeProperties = function(type_) {
+	ugmp.baseMap.uGisBaseMapBaroEmap.prototype._setTileLoadEvents = function(loadEvents_) {
 		var _self = this._this || this;
 
-		var superProperties = ugmp.baseMap.uGisBaseMapDefault.prototype.getTypeProperties.call( this, type_ );
-
-		return ugmp.util.uGisUtil.objectMerge( superProperties, {
-			resolutions : _self.resolutions,
+		var layer = _self.apiMap._getMap().baseLayer;
+		layer.events.register( "loadstart", layer, function() {
+			loadEvents_.call( this, true );
+		} );
+		layer.events.register( "loadend", layer, function() {
+			loadEvents_.call( this, false );
+		} );
+		layer.events.register( "tileloadstart", layer, function() {
+			loadEvents_.call( this, true );
+		} );
+		layer.events.register( "tileloaded", layer, function() {
+			loadEvents_.call( this, false );
 		} );
 	};
 

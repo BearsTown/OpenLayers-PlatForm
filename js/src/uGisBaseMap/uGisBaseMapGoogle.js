@@ -22,14 +22,6 @@
 
 			var options = opt_options || {};
 
-			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
-
-			_self.checkIsAvailable( "google.maps.MapTypeId" );
-
-			if ( !_self.isAvailables() ) {
-				return false;
-			}
-
 			options.isWorld = true;
 			options.isFactor = true;
 			options.baseCode = "google";
@@ -50,37 +42,67 @@
 					id : google.maps.MapTypeId.HYBRID, // hybrid
 					minZoom : 0,
 					maxZoom : 19
+				},
+				terrain : {
+					id : google.maps.MapTypeId.TERRAIN, // terrain
+					minZoom : 0,
+					maxZoom : 19
 				}
 			};
+			
+			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
 
-			_self.init( options );
+			_self.checkIsAvailable( "google.maps.MapTypeId" );
+
+			if ( !_self.isAvailables() ) {
+				return false;
+			}
 
 		} )();
 		// END initialize
 
 
 		/**
-		 * 지도 화면 이동 이벤트 동기화
+		 * 지도 줌 이동 이벤트 동기화.
 		 * 
-		 * @param evt {function} <change:resolution|change:center>
+		 * @param evt {function} <change:resolution>
 		 */
-		function syncMapFunc(evt_) {
+		function syncMapZoom(evt_) {
 			var syncData = _self.getSyncData( evt_ );
-
-			var googleCenter = ol.proj.transform( syncData[ "center" ], syncData[ "projection" ], "EPSG:4326" );
 			var googleLevel = syncData[ "zoom" ];
-
 			_self.apiMap.setZoom( googleLevel );
+		}
+
+		/**
+		 * 지도 화면 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:center>
+		 */
+		function syncMapCenter(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			var googleCenter = ol.proj.transform( syncData[ "center" ], syncData[ "projection" ], "EPSG:4326" );
 			_self.apiMap.setCenter( {
 				lat : googleCenter[ 1 ],
 				lng : googleCenter[ 0 ]
 			} );
 		}
 
+		/**
+		 * 지도 회전 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:rotation>
+		 */
+		function syncMapRotation(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			$( "#" + _self.target ).css( "transform", 'rotate(' + syncData[ "rotation" ] + 'rad)' );
+		}
+
 
 		return ugmp.util.uGisUtil.objectMerge( _super, {
 			_this : _self,
-			syncMapFunc : syncMapFunc
+			syncMapZoom : syncMapZoom,
+			syncMapCenter : syncMapCenter,
+			syncMapRotation : syncMapRotation
 		} );
 
 	} );
@@ -98,8 +120,10 @@
 	 * @param target {String} 베이스맵 DIV ID.
 	 * @param type {String} 배경지도 타입.
 	 */
-	ugmp.baseMap.uGisBaseMapGoogle.prototype.createBaseMap = function(target_, type_) {
+	ugmp.baseMap.uGisBaseMapGoogle.prototype.createBaseMap = function(target_, type_, loadEvents_) {
 		var _self = this._this || this;
+
+		_self.target = target_;
 
 		var googleMapOptions = {
 			zoom : 4,
@@ -111,7 +135,7 @@
 		};
 
 		_self.apiMap = new google.maps.Map( document.getElementById( target_ ), googleMapOptions );
-		_self.setMapType( type_ );
+		_self.setMapType( type_, loadEvents_ );
 	};
 
 
@@ -122,7 +146,7 @@
 	 * 
 	 * @param type {String} 배경지도 타입.
 	 */
-	ugmp.baseMap.uGisBaseMapGoogle.prototype.setMapType = function(type_) {
+	ugmp.baseMap.uGisBaseMapGoogle.prototype.setMapType = function(type_, loadEvents_) {
 		var _self = this._this || this;
 
 		var type = type_;
@@ -132,6 +156,8 @@
 		}
 
 		_self.apiMap.setMapTypeId( _self.mapTypes[ type ][ "id" ] );
+
+		_self._setTileLoadEvents( loadEvents_ );
 	};
 
 
@@ -143,6 +169,29 @@
 	ugmp.baseMap.uGisBaseMapGoogle.prototype.updateSize = function() {
 		var _self = this._this || this;
 		google.maps.event.trigger( _self.apiMap, "resize" );
+	};
+
+
+	/**
+	 * 배경지도 tile load events 설정.
+	 * 
+	 * @param loadEvents {Function} tile load events 함수.
+	 * 
+	 * @private
+	 */
+	ugmp.baseMap.uGisBaseMapGoogle.prototype._setTileLoadEvents = function(loadEvents_) {
+		var _self = this._this || this;
+
+		// 구글 지도 API events tilesloadstart 미지원
+		google.maps.event.addListener( _self.apiMap, "bounds_changed", function() {
+			loadEvents_.call( this, true );
+
+			window.setTimeout( function() {
+				loadEvents_.call( this, false );
+			}, 500 );
+		} );
+
+		google.maps.event.trigger( _self.apiMap, "bounds_changed" );
 	};
 
 } )();

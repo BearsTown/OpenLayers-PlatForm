@@ -22,14 +22,6 @@
 
 			var options = opt_options || {};
 
-			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
-
-			_self.checkIsAvailable( "new ol.layer.Tile" );
-
-			if ( !_self.isAvailable ) {
-				return false;
-			}
-
 			options.isWorld = true;
 			options.isFactor = true;
 			options.baseCode = "bing";
@@ -38,79 +30,112 @@
 			options.mapTypes = {
 				normal : {
 					id : "normal",
-					layer : new ol.layer.Tile( {
-						source : new ol.source.BingMaps( {
-							culture : 'ko-KR',
-							key : window.API_KEY_BING,
-							imagerySet : 'RoadOnDemand'
+					layer : function() {
+						return new ol.layer.Tile( {
+							source : new ol.source.BingMaps( {
+								culture : 'ko-KR',
+								key : window.API_KEY_BING,
+								imagerySet : 'RoadOnDemand'
+							} )
 						} )
-					} ),
+					},
 					minZoom : 0,
 					maxZoom : 19
 				},
 				aerial : {
 					id : "aerial",
-					layer : new ol.layer.Tile( {
-						source : new ol.source.BingMaps( {
-							culture : 'ko-KR',
-							key : window.API_KEY_BING,
-							imagerySet : 'Aerial'
+					layer : function() {
+						return new ol.layer.Tile( {
+							source : new ol.source.BingMaps( {
+								culture : 'ko-KR',
+								key : window.API_KEY_BING,
+								imagerySet : 'Aerial'
+							} )
 						} )
-					} ),
+					},
 					minZoom : 1,
 					maxZoom : 19
 				},
 				hybrid : {
 					id : "hybrid",
-					layer : new ol.layer.Tile( {
-						source : new ol.source.BingMaps( {
-							culture : 'ko-KR',
-							key : window.API_KEY_BING,
-							imagerySet : 'AerialWithLabelsOnDemand'
+					layer : function() {
+						return new ol.layer.Tile( {
+							source : new ol.source.BingMaps( {
+								culture : 'ko-KR',
+								key : window.API_KEY_BING,
+								imagerySet : 'AerialWithLabelsOnDemand'
+							} )
 						} )
-					} ),
+					},
 					minZoom : 1,
 					maxZoom : 19
 				},
 				dark : {
 					id : "dark",
-					layer : new ol.layer.Tile( {
-						source : new ol.source.BingMaps( {
-							culture : 'ko-KR',
-							key : window.API_KEY_BING,
-							imagerySet : 'CanvasDark'
+					layer : function() {
+						return new ol.layer.Tile( {
+							source : new ol.source.BingMaps( {
+								culture : 'ko-KR',
+								key : window.API_KEY_BING,
+								imagerySet : 'CanvasDark'
+							} )
 						} )
-					} ),
+					},
 					minZoom : 1,
 					maxZoom : 19
 				}
 			};
 
-			_self.init( options );
+			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
+
+			_self.checkIsAvailable( "new ol.layer.Tile" );
+
+			if ( !_self.isAvailable ) {
+				return false;
+			}
 
 		} )();
 		// END initialize
 
 
 		/**
-		 * 지도 화면 이동 이벤트 동기화
+		 * 지도 줌 이동 이벤트 동기화.
 		 * 
-		 * @param evt {function} <change:resolution|change:center>
+		 * @param evt {function} <change:resolution>
 		 */
-		function syncMapFunc(evt_) {
+		function syncMapZoom(evt_) {
 			var syncData = _self.getSyncData( evt_ );
-
-			var osmCenter = ol.proj.transform( syncData[ "center" ], syncData[ "projection" ], "EPSG:3857" );
 			var osmLevel = syncData[ "zoom" ];
-
 			_self.apiMap.getView().setZoom( osmLevel );
+		}
+
+		/**
+		 * 지도 화면 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:center>
+		 */
+		function syncMapCenter(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			var osmCenter = ol.proj.transform( syncData[ "center" ], syncData[ "projection" ], "EPSG:3857" );
 			_self.apiMap.getView().setCenter( osmCenter );
+		}
+
+		/**
+		 * 지도 회전 이동 이벤트 동기화.
+		 * 
+		 * @param evt {function} <change:rotation>
+		 */
+		function syncMapRotation(evt_) {
+			var syncData = _self.getSyncData( evt_ );
+			$( "#" + _self.target ).css( "transform", 'rotate(' + syncData[ "rotation" ] + 'rad)' );
 		}
 
 
 		return ugmp.util.uGisUtil.objectMerge( _super, {
 			_this : _self,
-			syncMapFunc : syncMapFunc
+			syncMapZoom : syncMapZoom,
+			syncMapCenter : syncMapCenter,
+			syncMapRotation : syncMapRotation
 		} );
 
 	} );
@@ -127,9 +152,12 @@
 	 * 
 	 * @param target {String} 베이스맵 DIV ID.
 	 * @param type {String} 배경지도 타입.
+	 * @param loadEvents {Function} tile load events 함수.
 	 */
-	ugmp.baseMap.uGisBaseMapBing.prototype.createBaseMap = function(target_, type_) {
+	ugmp.baseMap.uGisBaseMapBing.prototype.createBaseMap = function(target_, type_, loadEvents_) {
 		var _self = this._this || this;
+
+		_self.target = target_;
 
 		_self.apiMap = new ol.Map( {
 			layers : [],
@@ -142,7 +170,7 @@
 			} )
 		} );
 
-		_self.setMapType( type_ );
+		_self.setMapType( type_, loadEvents_ );
 	};
 
 
@@ -152,8 +180,9 @@
 	 * @override
 	 * 
 	 * @param type {String} 배경지도 타입
+	 * @param loadEvents {Function} tile load events 함수.
 	 */
-	ugmp.baseMap.uGisBaseMapBing.prototype.setMapType = function(type_) {
+	ugmp.baseMap.uGisBaseMapBing.prototype.setMapType = function(type_, loadEvents_) {
 		var _self = this._this || this;
 
 		var type = type_;
@@ -163,7 +192,9 @@
 		}
 
 		_self._removeAllLayer( _self.apiMap.getLayers() );
-		_self.apiMap.addLayer( _self.mapTypes[ type ][ "layer" ] );
+		_self.apiMap.addLayer( _self.mapTypes[ type ][ "layer" ]() );
+
+		_self._setTileLoadEvents( loadEvents_ );
 	};
 
 
@@ -193,6 +224,29 @@
 		if ( _self.apiMap.getLayers().getLength() > 0 ) {
 			_self._removeAllLayer( _self.apiMap.getLayers() );
 		}
+	};
+
+
+	/**
+	 * 배경지도 tile load events 설정.
+	 * 
+	 * @param loadEvents {Function} tile load events 함수.
+	 * 
+	 * @private
+	 */
+	ugmp.baseMap.uGisBaseMapBing.prototype._setTileLoadEvents = function(loadEvents_) {
+		var _self = this._this || this;
+
+		var source = _self.apiMap.getLayers().item( 0 ).getSource();
+		source.on( [ "imageloadstart", "tileloadstart" ], function() {
+			loadEvents_.call( this, true );
+		} );
+		source.on( [ "imageloadend", "tileloadend" ], function() {
+			loadEvents_.call( this, false );
+		} );
+		source.on( [ "imageloaderror", "tileloaderror" ], function() {
+			loadEvents_.call( this, false );
+		} );
 	};
 
 } )();

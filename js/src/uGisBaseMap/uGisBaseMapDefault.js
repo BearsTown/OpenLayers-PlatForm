@@ -27,6 +27,8 @@
 	ugmp.baseMap.uGisBaseMapDefault = ( function(opt_options) {
 		var _self = this;
 
+		this.target = null;
+
 		this.apiMap = null;
 		this.isWorld = null;
 		this.isFactor = null;
@@ -35,12 +37,24 @@
 		this.projection = null;
 		this.maxExtent = null;
 		this.isAvailable = null;
+		this.resolutions = null;
 
 
 		/**
 		 * Initialize
 		 */
 		( function() {
+
+			var options = opt_options || {};
+
+			_self.isWorld = ( options.isWorld !== undefined ) ? options.isWorld : true;
+			_self.isFactor = ( options.isFactor !== undefined ) ? options.isFactor : true;
+			_self.apiMap = ( options.apiMap !== undefined ) ? options.apiMap : undefined;
+			_self.mapTypes = ( options.mapTypes !== undefined ) ? options.mapTypes : {};
+			_self.projection = ( options.projection !== undefined ) ? options.projection : "EPSG:3857";
+			_self.baseCode = ( options.baseCode !== undefined ) ? options.baseCode : "custom_code";
+			_self.resolutions = ( options.resolutions !== undefined ) ? options.resolutions : undefined;
+			_self.maxExtent = ( options.maxExtent !== undefined ) ? options.maxExtent : ol.proj.get( "EPSG:3857" ).getExtent();
 
 		} )();
 		// END initialize
@@ -49,50 +63,19 @@
 		return {
 			isWorlds : _self.isWorlds,
 			isFactors : _self.isFactors,
-			isAvailables : _self.isAvailables,
+			getApiMap : _self.getApiMap,
 			updateSize : _self.updateSize,
 			setMapType : _self.setMapType,
-			syncMapFunc : _self.syncMapFunc,
+			isAvailables : _self.isAvailables,
+			syncMapZoom : _self.syncMapZoom,
+			syncMapCenter : _self.syncMapCenter,
+			syncMapRotation : _self.syncMapRotation,
 			getUsableKeys : _self.getUsableKeys,
 			createBaseMap : _self.createBaseMap,
 			getTypeProperties : _self.getTypeProperties
 		}
 
 	} );
-
-
-	/**
-	 * 초기화
-	 */
-	ugmp.baseMap.uGisBaseMapDefault.prototype.init = function(opt_options) {
-		var _self = this._this || this;
-
-		var options = opt_options || {};
-
-		_self.apiMap = ( options.apiMap !== undefined ) ? options.apiMap : undefined;
-		_self.isWorld = ( options.isWorld !== undefined ) ? options.isWorld : true;
-		_self.isFactor = ( options.isFactor !== undefined ) ? options.isFactor : true;
-		_self.mapTypes = ( options.mapTypes !== undefined ) ? options.mapTypes : {};
-		_self.baseCode = ( options.baseCode !== undefined ) ? options.baseCode : "custom_code";
-		_self.projection = ( options.projection !== undefined ) ? options.projection : "EPSG:3857";
-		_self.maxExtent = ( options.maxExtent !== undefined ) ? options.maxExtent : ol.proj.get( "EPSG:3857" ).getExtent();
-
-		if ( typeof ( options.createBaseMap ) === "function" ) {
-			_self.createBaseMap = options.createBaseMap;
-		}
-		if ( typeof ( options.syncMapFunc ) === "function" ) {
-			_self.syncMapFunc = options.syncMapFunc;
-		}
-		if ( typeof ( options.setMapType ) === "function" ) {
-			_self.setMapType = options.setMapType;
-		}
-		if ( typeof ( options.updateSize ) === "function" ) {
-			_self.updateSize = options.updateSize;
-		}
-		if ( typeof ( options.getTypeProperties ) === "function" ) {
-			_self.getTypeProperties = options.getTypeProperties;
-		}
-	};
 
 
 	/**
@@ -108,13 +91,35 @@
 
 
 	/**
+	 * 지도 줌 이동 이벤트 동기화.
+	 * 
+	 * @abstract
+	 * 
+	 * @param evt {Function} <change:resolution>
+	 */
+	ugmp.baseMap.uGisBaseMapDefault.prototype.syncMapZoom = function(evt_) {
+	};
+
+
+	/**
 	 * 지도 화면 이동 이벤트 동기화.
+	 * 
+	 * @abstract
+	 * 
+	 * @param evt {Function} <change:center>
+	 */
+	ugmp.baseMap.uGisBaseMapDefault.prototype.syncMapCenter = function(evt_) {
+	};
+
+
+	/**
+	 * 지도 회전 이동 이벤트 동기화.
 	 * 
 	 * @abstract
 	 * 
 	 * @param evt {Function} <change:resolution|change:center>
 	 */
-	ugmp.baseMap.uGisBaseMapDefault.prototype.syncMapFunc = function(evt_) {
+	ugmp.baseMap.uGisBaseMapDefault.prototype.syncMapRotation = function(evt_) {
 	};
 
 
@@ -159,6 +164,7 @@
 			baseCode : _self.baseCode,
 			projection : _self.projection,
 			maxExtent : _self.maxExtent,
+			resolutions : _self.resolutions,
 			id : _self.mapTypes[ type_ ][ "id" ]
 		}
 	};
@@ -222,6 +228,7 @@
 		return {
 			view : view,
 			center : view.getCenter(),
+			rotation : view.getRotation(),
 			projection : view.getProjection(),
 			resolution : view.getResolution(),
 			zoom : Math.round( view.getZoom() )
@@ -250,6 +257,7 @@
 		return _self.isWorld;
 	};
 
+
 	/**
 	 * 좌표계 별 zoomFactor 차이를 맞추기 위한 factor 사용 여부.
 	 * 
@@ -258,6 +266,17 @@
 	ugmp.baseMap.uGisBaseMapDefault.prototype.isFactors = function() {
 		var _self = this._this || this;
 		return _self.isFactor;
+	};
+
+
+	/**
+	 * 배경지도의 API 객체를 가져온다.
+	 * 
+	 * @return apiMap {Object} 배경지도의 API 객체.
+	 */
+	ugmp.baseMap.uGisBaseMapDefault.prototype.getApiMap = function() {
+		var _self = this._this || this;
+		return _self.apiMap;
 	};
 
 } )();

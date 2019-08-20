@@ -8,13 +8,13 @@
 	 * 
 	 * uGisMapPlatForm에서 기본적으로 내장한 배경지도 API는 다음과 같으며, API KEY가 정상적인 경우에만 사용할 수 있다.
 	 * 
-	 * 1. Google(normal, satellite, hybrid) : 월 28,500건 무료.
+	 * 1. Google(normal, terrain, satellite, hybrid) : 월 28,500건 무료.
 	 * 
 	 * 2. OpenStreetMap(none, normal, gray) : 무제한 무료.
 	 * 
 	 * 3. Stamen(toner, terrain) : 무제한 무료.
 	 * 
-	 * 4. vWorld(normal, satellite, hybrid, gray, midnight) : 무제한 무료.
+	 * 4. vWorld(normal, gray, satellite, hybrid, midnight) : 무제한 무료.
 	 * 
 	 * 5. 바로E맵(normal, white, colorVision) : 무제한 무료.
 	 * 
@@ -31,6 +31,7 @@
 	 * 	target : 'base',
 	 * 	uGisMap : new ugmp.uGisMap({...}),
 	 * 	baseMapKey : 'google_normal'
+	 * 	useElementMargin : false
 	 * } );
 	 * </pre>
 	 * 
@@ -40,6 +41,7 @@
 	 * @param opt_options.target {String} 배경지도 DIV ID.
 	 * @param opt_options.uGisMap {ugmp.uGisMap} {@link ugmp.uGisMap} 객체.
 	 * @param opt_options.baseMapKey {String} 배경지도 Key ( _로 구분 ). Default is `osm_normal`.
+	 * @param opt_options.useElementMargin {Boolean} 배경지도 회전 시 공백 처리를 위한 element의 여백 사이즈 사용 유무 . Default is `true`.
 	 * 
 	 * @class
 	 */
@@ -48,13 +50,16 @@
 
 		this.target = null;
 		this.uGisMap = null;
+		this.useElementMargin = null;
 
+		this.UUID = null;
 		this.nowMapView = null;
 		this.baseMapList = null;
 		this.nowBaseMapKey = null;
 
-		this.key_zoomEnd = null;
 		this.key_changeCenter = null;
+		this.key_elementResize = null;
+		this.key_changeRotation = null;
 		this.key_changeResolution = null;
 
 
@@ -65,9 +70,11 @@
 
 			var options = opt_options || {};
 
+			_self.UUID = ugmp.util.uGisUtil.generateUUID().split( "-" )[ 0 ];
 			_self.target = ( options.target !== undefined ) ? options.target : undefined;
 			_self.uGisMap = ( options.uGisMap !== undefined ) ? options.uGisMap : undefined;
 			_self.nowBaseMapKey = ( options.baseMapKey !== undefined ) ? options.baseMapKey : "osm_normal";
+			_self.useElementMargin = ( options.useElementMargin !== undefined ) ? options.useElementMargin : true;
 
 			if ( !_self.uGisMap ) {
 				ugmp.uGisConfig.alert_Error( "uGisMap undefined" );
@@ -78,12 +85,12 @@
 			_self.addBaseMapType( "bing", new ugmp.baseMap.uGisBaseMapBing() );
 			_self.addBaseMapType( "daum", new ugmp.baseMap.uGisBaseMapDaum() );
 			_self.addBaseMapType( "naver", new ugmp.baseMap.uGisBaseMapNaver() );
-			_self.addBaseMapType( "vWorld", new ugmp.baseMap.uGisBaseMapVWorld() );
-			_self.addBaseMapType( "baroEmap", new ugmp.baseMap.uGisBaseMapBaroEmap() );
-			_self.addBaseMapType( "stamen", new ugmp.baseMap.uGisBaseMapStamen() );
 			_self.addBaseMapType( "google", new ugmp.baseMap.uGisBaseMapGoogle() );
+			_self.addBaseMapType( "vWorld", new ugmp.baseMap.uGisBaseMapVWorld() );
+			_self.addBaseMapType( "stamen", new ugmp.baseMap.uGisBaseMapStamen() );
+			_self.addBaseMapType( "baroEmap", new ugmp.baseMap.uGisBaseMapBaroEmap() );
 
-			_self.callBaseMapType( _self.nowBaseMapKey );
+			_self._callBaseMapType( _self.nowBaseMapKey );
 
 			_self.setVisible( true );
 		} )();
@@ -93,10 +100,11 @@
 		return {
 			_this : _self,
 			remove : _self.remove,
-			getVisible : _self.getVisible,
 			setVisible : _self.setVisible,
-			getOpacity : _self.getOpacity,
+			getVisible : _self.getVisible,
+			getApiMap : _self.getApiMap,
 			setOpacity : _self.setOpacity,
+			getOpacity : _self.getOpacity,
 			visibleToggle : _self.visibleToggle,
 			changeBaseMap : _self.changeBaseMap,
 			addBaseMapType : _self.addBaseMapType,
@@ -112,13 +120,20 @@
 	 * 
 	 * @private
 	 */
-	ugmp.baseMap.uGisBaseMap.prototype.callBaseMapType = function(baseMapKey_) {
+	ugmp.baseMap.uGisBaseMap.prototype._callBaseMapType = function(baseMapKey_) {
 		var _self = this._this || this;
 
 		if ( !_self._isBaseMapUsable( baseMapKey_ ) ) {
 			ugmp.uGisConfig.alert_Error( baseMapKey_ + " undefined" );
 			return false;
 		}
+
+		$( "#" + _self.target ).prepend( $( "<div>", {
+			'id' : _self.UUID,
+			'style' : "width: 100%; height: 100%; position: relative; overflow: hidden"
+		} ) );
+
+		ugmp.util.uGisUtil.setCssTextStyle( $( "#" + _self.target )[ 0 ], "overflow", "hidden !important" );
 
 		var code = baseMapKey_.split( "_" )[ 0 ];
 		var type = baseMapKey_.split( "_" )[ 1 ];
@@ -131,7 +146,9 @@
 		var baseMap = _self.baseMapList[ code ][ "object" ];
 		var properties = baseMap.getTypeProperties( type );
 
-		baseMap.createBaseMap( _self.target, type );
+		baseMap.createBaseMap( _self.UUID, type, function(state_) {
+			ugmp.uGisConfig.loading( _self.uGisMap.getDataViewId(), state_ );
+		} );
 
 		var view = _self._createView( baseMap, type );
 
@@ -141,17 +158,20 @@
 
 		_self.uGisMap.getMap().setView( view );
 
-		view.setCenter( [ view.getCenter()[ 0 ] + 5, view.getCenter()[ 1 ] ] );
-		view.setCenter( [ view.getCenter()[ 0 ] - 5, view.getCenter()[ 1 ] ] );
+		_self._setElementMargin();
+
+		_self.uGisMap.refresh();
 
 		_$( "#" + _self.target ).resize( function() {
-			if ( baseMap.updateSize ) {
-				baseMap.updateSize();
+			if ( _self._updateSize ) {
+				_self._setElementMargin();
+				_self._updateSize();
 			}
 		} );
 
 		_$( window ).resize( function() {
 			if ( _self._updateSize ) {
+				_self._setElementMargin();
 				_self._updateSize();
 			}
 		} );
@@ -168,47 +188,17 @@
 	ugmp.baseMap.uGisBaseMap.prototype._activeChangeResolution = function(baseMap_) {
 		var _self = this._this || this;
 
-		var currentZoomLevel = null;
 		var view = _self.uGisMap.getMap().getView();
 
 		_self.uGisMap.getMap().on( "change:view", function(evt1_) {
-			ol.Observable.unByKey( _self.key_zoomEnd );
 			ol.Observable.unByKey( _self.key_changeCenter );
+			ol.Observable.unByKey( _self.key_changeRotation );
 			ol.Observable.unByKey( _self.key_changeResolution );
 
-			_self.key_changeCenter = evt1_.target.getView().on( "change:center", baseMap_.syncMapFunc );
-			detectZoomChange( evt1_.target.getView() );
+			_self.key_changeCenter = evt1_.target.getView().on( "change:center", baseMap_.syncMapCenter );
+			_self.key_changeRotation = evt1_.target.getView().on( "change:rotation", baseMap_.syncMapRotation );
+			_self.key_changeResolution = evt1_.target.getView().on( "change:resolution", baseMap_.syncMapZoom );
 		} );
-
-
-		detectZoomChange( view );
-
-
-		function detectZoomChange(view_) {
-			var targetView = view_;
-
-			var zoomEnd = function(evt2_) {
-				var v = evt2_.map.getView();
-				var newZoomLevel = v.getZoom();
-
-				if ( currentZoomLevel != newZoomLevel ) {
-					currentZoomLevel = newZoomLevel;
-					baseMap_.syncMapFunc( evt2_ );
-				}
-
-				_self.key_zoomEnd = _self.uGisMap.getMap().once( "moveend", function(evt3_) {
-					zoomEnd( evt3_ );
-				} );
-			};
-
-
-			_self.key_changeResolution = targetView.once( "change:resolution", function(evt4_) {
-				_self.uGisMap.getMap().once( "moveend", function(evt5_) {
-					zoomEnd( evt5_ );
-				} );
-			} );
-
-		}
 	};
 
 
@@ -244,9 +234,9 @@
 	 * @param baseMap {String} 배경지도
 	 * @param type {String} 배경지도 타입
 	 * 
-	 * @private
-	 * 
 	 * @return nowMapView {ol.View} 현재 Map의 View
+	 * 
+	 * @private
 	 */
 	ugmp.baseMap.uGisBaseMap.prototype._createView = function(baseMap_, type_) {
 		var _self = this._this || this;
@@ -259,6 +249,7 @@
 			extent : properties[ "maxExtent" ],
 			center : ol.proj.transform( oldView.getCenter(), oldView.getProjection(), properties[ "projection" ] ),
 			zoom : oldView.getZoom(),
+			rotation : oldView.getRotation(),
 			minZoom : properties[ "minZoom" ],
 			maxZoom : properties[ "maxZoom" ]
 		};
@@ -424,7 +415,9 @@
 
 		// 배경지도 코드가 같으면서 타입이 다를 때
 		if ( ( beforeBMCode === afterBMCode ) && ( beforeBMType !== afterBMType ) ) {
-			afterBaseMap.setMapType( afterBMType );
+			afterBaseMap.setMapType( afterBMType, function(state_) {
+				ugmp.uGisConfig.loading( _self.uGisMap.getDataViewId(), state_ );
+			} );
 			var view = _self.nowMapView;
 
 			view.setMinZoom( afterProperties.minZoom );
@@ -437,10 +430,12 @@
 			var beforeZoomCount = beforeProperties[ "zoomCount" ];
 			var afterZoomCount = afterProperties[ "zoomCount" ];
 
-			document.getElementById( _self.target ).innerHTML = "";
-			document.getElementById( _self.target ).style.background = "";
+			document.getElementById( _self.UUID ).innerHTML = "";
+			document.getElementById( _self.UUID ).style.background = "";
 
-			afterBaseMap.createBaseMap( _self.target, afterBMType );
+			afterBaseMap.createBaseMap( _self.UUID, afterBMType, function(state_) {
+				ugmp.uGisConfig.loading( _self.uGisMap.getDataViewId(), state_ );
+			} );
 
 			var view = _self._createView( afterBaseMap, afterBMType );
 
@@ -482,15 +477,12 @@
 
 		}
 
-		view.setCenter( [ view.getCenter()[ 0 ] + 5, view.getCenter()[ 1 ] ] );
-		view.setCenter( [ view.getCenter()[ 0 ] - 5, view.getCenter()[ 1 ] ] );
+		_self.uGisMap.refresh();
 
 		_self.nowBaseMapKey = baseMapKey_;
 
-		console.log( "### changeBaseMap ###" );
+		console.log( "####### changeBaseMap #######" );
 		console.log( "baseMapType : " + _self.nowBaseMapKey );
-		console.log( "View : " );
-		console.log( view );
 	};
 
 
@@ -563,7 +555,7 @@
 	ugmp.baseMap.uGisBaseMap.prototype.getOpacity = function(opacity_) {
 		var _self = this._this || this;
 
-		var element = document.getElementById( _self.target );
+		var element = document.getElementById( _self.UUID );
 
 		return element.style.opacity;
 	};
@@ -579,7 +571,7 @@
 	ugmp.baseMap.uGisBaseMap.prototype.setOpacity = function(opacity_) {
 		var _self = this._this || this;
 
-		var element = document.getElementById( _self.target );
+		var element = document.getElementById( _self.UUID );
 
 		if ( typeof opacity_ === 'number' ) {
 			element.style.opacity = opacity_;
@@ -595,7 +587,7 @@
 	ugmp.baseMap.uGisBaseMap.prototype.getVisible = function() {
 		var _self = this._this || this;
 
-		var element = document.getElementById( _self.target );
+		var element = document.getElementById( _self.UUID );
 
 		return ( element.style.visibility === 'visible' ) ? true : false;
 	};
@@ -610,7 +602,7 @@
 		var _self = this._this || this;
 
 		var visibility = 'visible';
-		var element = document.getElementById( _self.target );
+		var element = document.getElementById( _self.UUID );
 
 		if ( typeof visible_ === 'boolean' ) {
 			if ( !visible_ ) {
@@ -628,7 +620,7 @@
 	ugmp.baseMap.uGisBaseMap.prototype.visibleToggle = function() {
 		var _self = this._this || this;
 
-		var element = document.getElementById( _self.target );
+		var element = document.getElementById( _self.UUID );
 		var visibility = element.style.visibility;
 
 		if ( visibility === 'visible' ) {
@@ -637,5 +629,44 @@
 			_self.setVisible( true );
 		}
 	};
+
+
+	/**
+	 * 현재 배경지도의 API 객체를 가져온다.
+	 * 
+	 * @return apiMap {Object} 현재 배경지도의 API 객체.
+	 */
+	ugmp.baseMap.uGisBaseMap.prototype.getApiMap = function() {
+		var _self = this._this || this;
+		return _self.baseMapList[ _self.nowBaseMapKey.split( "_" )[ 0 ] ][ "object" ].getApiMap();
+	};
+
+
+	/**
+	 * 배경지도 회전 시 공백 처리를 위한 element의 여백 사이즈를 설정한다.
+	 * 
+	 * @private
+	 */
+	ugmp.baseMap.uGisBaseMap.prototype._setElementMargin = ( function() {
+		var _self = this._this || this;
+
+		if ( !_self.useElementMargin ) return false;
+
+		var $target = $( "#" + _self.target );
+		var $base = $( "#" + _self.UUID );
+
+		var originWidth = $target.width();
+		var originHeight = $target.height();
+		var diagonalLength = Math.round( Math.sqrt( Math.pow( $target.width(), 2 ) + Math.pow( $target.height(), 2 ) ) );
+		var interval_width = Math.round( diagonalLength - originWidth );
+		var interval_height = Math.round( diagonalLength - originHeight );
+		if ( interval_width % 2 === 1 ) ++interval_width;
+		if ( interval_height % 2 === 1 ) ++interval_height;
+
+		$base.css( "width", 'calc(100% + ' + interval_width + 'px)' );
+		$base.css( "height", 'calc(100% + ' + interval_height + 'px)' );
+		$base.css( "left", -( interval_width / 2 ) );
+		$base.css( "top", -( interval_height / 2 ) );
+	} );
 
 } )();
