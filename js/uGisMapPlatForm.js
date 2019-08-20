@@ -5,7 +5,7 @@
  * 
  * Author : LeeJaeHyuk
  * 
- * Date : 2019.03.14
+ * Date : 2019.08.20
  */
 ( function(window, jQuery) {
 	"use strict";
@@ -17,7 +17,8 @@
 
 	window._$ = jQuery;
 	window.ugmp = {
-		version : "1.4.1",
+		version : "1.4.3",
+		etc : {},
 		toc : {},
 		util : {},
 		layer : {},
@@ -34,7 +35,9 @@
 	window.ugmp.contextPath = contextPath;
 
 	var srcPath = "/uGisMapPlatForm/js/src";
-	var libFiles = [ 
+	var libFiles = [
+		srcPath + "/etcExtensions.js",
+		
 		srcPath + "/uGisUtil/uGisUtil.js",
 		srcPath + "/uGisUtil/uGisGeoSpatialUtil.js",
 
@@ -46,6 +49,8 @@
 
 		srcPath + "/olPrototype/layer/vector.js",
 		srcPath + "/olPrototype/interaction/mouseWheelZoom.js",
+		
+		srcPath + "/etc/uGisNavigationHistory.js",
 
 		srcPath + "/uGisService/filterDwithin.js",
 		srcPath + "/uGisService/uGisGetFeature.js",
@@ -82,6 +87,7 @@
 		srcPath + "/uGisBaseMap/uGisBaseMapStamen.js",
 		srcPath + "/uGisBaseMap/uGisBaseMapGoogle.js",
 		srcPath + "/uGisBaseMap/uGisBaseMapCustom.js",
+		srcPath + "/uGisBaseMap/uGisBaseMapTMS_vWorld.js",
 		srcPath + "/uGisBaseMap/uGisBaseMap.js",
 
 		srcPath + "/uGisAnimation/animation/featureAnimationDefault.js",

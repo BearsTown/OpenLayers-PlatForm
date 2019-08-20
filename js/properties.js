@@ -158,6 +158,11 @@
 				name : 'uGisBaseMapCustom',
 				link_api : root + '/apidoc/ugmp.baseMap.uGisBaseMapCustom.html',
 				object : 'ugmp.baseMap.uGisBaseMapCustom'
+			},
+			TMS_VWORLD : {
+				name : 'uGisBaseMapTMS_vWorld',
+				link_api : root + '/apidoc/ugmp.baseMap.uGisBaseMapTMS_vWorld.html',
+				object : 'ugmp.baseMap.uGisBaseMapTMS_vWorld'
 			}
 		},
 
@@ -308,6 +313,14 @@
 				object : 'ugmp.util.uGisGeoSpatialUtil'
 			}
 		},
+
+		ETC : {
+			HISTORY : {
+				name : 'uGisNavigationHistory',
+				link_api : root + '/apidoc/ugmp.etc.uGisNavigationHistory.html',
+				object : 'ugmp.etc.uGisNavigationHistory'
+			}
+		}
 	};
 
 	var PO = UGIS_PROP.OBJECT;
@@ -349,6 +362,15 @@
 				link_view : root + '/examples/basic/wheelZoomAltKeyOnly_view.html',
 				img : imagesPath + 'basic/scroll.jpg',
 				requires : [ PO.CONFIG, PO.MAP ]
+			},
+			HISTORY : {
+				name : 'HISTORY',
+				title : 'uGisNavigationHistory - 이전/이후 보기',
+				desc : '지도 이동 및 영역 변경 시 이력을 기록하고 이전/이후 영역으로 이동한다.',
+				link_code : root + '/examples/basic/uGisNavigationHistory.html',
+				link_view : root + '/examples/basic/uGisNavigationHistory_view.html',
+				img : imagesPath + 'basic/uGisNavigationHistory.jpg',
+				requires : [ PO.CONFIG, PO.MAP, PO.ETC.HISTORY ]
 			}
 		},
 
@@ -525,7 +547,16 @@
 				link_view : root + '/examples/baseMap/uGisBaseMapCustom_view.html',
 				img : imagesPath + 'baseMap/uGisBaseMapCustom.jpg',
 				requires : [ PO.MAP, PO.SERVICE.CAPABILITIES.WMTS, PO.LAYER.WMTS, PO.BASEMAP.BASEMAP, PO.BASEMAP.CUSTOM ]
-			}
+			},
+			TMS_VWORLD : {
+				name : 'TMS_VWORLD',
+				title : 'uGisBaseMapTMS_vWorld - TMS_vWorld 배경지도',
+				desc : 'vWorld 배경지도를 특정 좌표계로 설정하여 TMS 배경지도로 사용할 수 있다.',
+				link_code : root + '/examples/baseMap/uGisBaseMapTMS_vWorld.html',
+				link_view : root + '/examples/baseMap/uGisBaseMapTMS_vWorld_view.html',
+				img : imagesPath + 'baseMap/uGisBaseMapTMS_vWorld.jpg',
+				requires : [ PO.MAP, PO.BASEMAP.BASEMAP, PO.BASEMAP.TMS_VWORLD ]
+			}			
 		},
 
 		CONTROL : {
@@ -744,7 +775,7 @@
 	UGIS_PROP.EXAMPLE_GROUP = [
 			{
 				name : 'Basic',
-				examples : [ PE.BASIC.CONFIG, PE.BASIC.HTTP, PE.BASIC.MAP, PE.BASIC.POPUP, PE.BASIC.WHEELZOOM ]
+				examples : [ PE.BASIC.CONFIG, PE.BASIC.HTTP, PE.BASIC.MAP, PE.BASIC.POPUP, PE.BASIC.WHEELZOOM, PE.BASIC.HISTORY ]
 			},
 			{
 				name : 'Service',
@@ -761,7 +792,7 @@
 			},
 			{
 				name : 'BaseMap',
-				examples : [ PE.BASEMAP.BASEMAP, PE.BASEMAP.CUSTOM ]
+				examples : [ PE.BASEMAP.BASEMAP, PE.BASEMAP.CUSTOM, PE.BASEMAP.TMS_VWORLD ]
 			},
 			{
 				name : 'Control',

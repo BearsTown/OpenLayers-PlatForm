@@ -43,6 +43,7 @@
 
 		_self._checkMobile();
 		_self._checkBrowser();
+		_self._setIeCursor();
 
 		return {
 			_this : _self,
@@ -241,13 +242,13 @@
 
 		( function() {
 			_self.key = key_;
-			_self.loading = 0;
 			_self.loaded = 0;
+			_self.loading = 0;
 			_self.loadingFunc = loadingFunc_;
 		} )();
 
 
-		this.addLoading = function() {
+		this.addLoading = ( function() {
 			if ( _self.loading === 0 ) {
 				_self.loadingFunc( true );
 
@@ -255,45 +256,45 @@
 			}
 			++_self.loading;
 			_self.update();
-		}
+		} );
 
 
-		this.addLoaded = function() {
+		this.addLoaded = ( function() {
 			setTimeout( function() {
 				++_self.loaded;
 				_self.update();
 			}, 100 );
-		}
+		} );
 
 
-		this.update = function() {
-			if ( _self.loading === _self.loaded ) {
+		this.update = ( function() {
+			if ( ( _self.loading !== 0 && _self.loaded !== 0 ) && ( _self.loading <= _self.loaded ) ) {
 				_self.loading = 0;
 				_self.loaded = 0;
 
 				clearInterval( _self.interval );
 
-				_self.timeOut = setTimeout( function() {
-					_self.loadingFunc( false );
+				// _self.timeOut = setTimeout( function() {
+				_self.loadingFunc( false );
 
-					$( document ).trigger( "loadChangeEvent_" + _self.key, true );
-				}, 999 );
+				$( document ).trigger( "loadChangeEvent_" + _self.key, true );
+				// }, 999 );
 			} else {
 				clearTimeout( _self.timeOut );
 			}
-		}
+		} );
 
 
-		this.reset = function() {
+		this.reset = ( function() {
 			clearInterval( _self.interval );
 			_self.interval = setInterval( _self.update, 1000 );
-		};
+		} );
 
 
 		return {
 			reset : _self.reset,
-			addLoading : _self.addLoading,
-			addLoaded : _self.addLoaded
+			addLoaded : _self.addLoaded,
+			addLoading : _self.addLoading
 		}
 	};
 
@@ -360,6 +361,39 @@
 
 
 	/**
+	 * 브라우저가 IE인 경우 마우스 커서 설정.
+	 * 
+	 * @private
+	 */
+	ugmp.uGisConfig.prototype._setIeCursor = function() {
+		var _self = this._this || this;
+
+		if ( _self.browser && _self.browser.indexOf( "ie" ) > -1 ) {
+			var style = document.createElement( 'style' );
+			style.type = 'text/css';
+			document.getElementsByTagName( 'head' )[ 0 ].appendChild( style );
+
+			var cursorList = [ 'default', 'closeHand', 'identify', 'measureArea', 'measureDistance', 'zoomIn', 'zoomOut', 'zoomOut', 'point', 'line',
+					'polygon', 'rectangle', 'circle' ];
+
+			for ( var i in cursorList ) {
+				var cursor = cursorList[ i ];
+				var url = "../images/cursor/cursor_" + cursor + ".cur";
+
+				var name = '.cursor-' + cursor;
+				var rule = "cursor: url(" + url + "), auto !important;";
+
+				if ( !( style.sheet || {} ).insertRule ) {
+					( style.styleSheet || style.sheet ).addRule( name, rule );
+				} else {
+					style.sheet.insertRule( name + "{" + rule + "}", 0 );
+				}
+			}
+		}
+	};
+
+
+	/**
 	 * 설정된 로딩 심볼 이미지를 가져온다.
 	 * 
 	 * @return loadingImg {String} 이미지 경로 또는 base64.
@@ -397,7 +431,9 @@
 	 */
 	ugmp.uGisConfig.prototype.addLoadEventListener = function(key_, eventListener_) {
 		var _self = this._this || this;
-		$( document ).on( "loadChangeEvent_" + key_, eventListener_ );
+		setTimeout( function() {
+			$( document ).on( "loadChangeEvent_" + key_, eventListener_ );
+		}, 10 )
 	};
 
 

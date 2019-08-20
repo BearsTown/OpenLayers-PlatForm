@@ -42,6 +42,7 @@ module.exports = function (grunt) {
                     "js/src/olPrototype/interaction/*.js",
                     
                     "js/src/*.js",
+                    "js/src/etc/*.js",
                 	"js/src/uGisUtil/*.js",
                     
                     "js/src/uGisService/*.js",
@@ -75,8 +76,9 @@ module.exports = function (grunt) {
 
         jsdoc: {
             dist: {
-                src: [                    
+                src: [
                     "js/src/*.js",
+                    "js/src/etc/*.js",
                 	"js/src/uGisUtil/*.js",                    
                     "js/src/uGisService/**/*.js",                    
                     "js/src/uGisLayer/**/*.js",                    
@@ -123,7 +125,7 @@ module.exports = function (grunt) {
     });
 
     // Definitions of tasks
-    grunt.registerTask('default', 'Create olMapPlatForm .js & Documentations', [
+    grunt.registerTask('default', 'Create uGisMapPlatForm.js & Documentations', [
         'jshint',
         'concat:my_target',
         'uglify:my_target',
@@ -131,13 +133,13 @@ module.exports = function (grunt) {
         'jsdoc:dist'
     ]);
 
-    grunt.registerTask('build', 'Build a olMapPlatForm-debug.js Files', [
+    grunt.registerTask('build', 'Build a uGisMapPlatForm-debug.js Files', [
         'jshint',
         'concat:my_target',
         'uglify:my_target'
     ]);
 
-    grunt.registerTask('doc', 'Create olMapPlatForm Documentations', [
+    grunt.registerTask('doc', 'Create uGisMapPlatForm Documentations', [
         'clean:jsdoc',
         'jsdoc:dist'
     ]);

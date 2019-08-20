@@ -112,13 +112,13 @@
 						overlays[ i ].set( "CRS", _self.mapCRS );
 					}
 				}
-				
+
 				ugmp.uGisConfig.resetLoading( _self.dataViewId );
 			} );
 
-			
+
 			var tag = ( options.target instanceof Element ) ? options.target : "#" + options.target;
-			
+
 			_$( tag ).resize( function() {
 				_self.refresh();
 			} );
@@ -128,8 +128,6 @@
 			} );
 
 			console.log( "####### uGisMap Init #######" );
-			console.log( "openLayers Map : " );
-			console.log( _self.olMap );
 			console.log( "Projection : " + _self.mapCRS );
 		} )();
 		// END initialize
@@ -304,19 +302,23 @@
 	 * @return interactions {Array.<ol.interaction.Interaction>}
 	 */
 	ugmp.uGisMap.prototype._createDefaultInteractions = function() {
-		var interactions = [ new ol.interaction.DragRotate(), new ol.interaction.DoubleClickZoom( {
-			duration : 0
-		} ), new ol.interaction.PinchZoom( {
-			duration : 0,
-			constrainResolution : true
-		} ), new ol.interaction.MouseWheelZoom( {
-			constrainResolution : true,
-			duration : 0
+		var interactions = [ new ol.interaction.DragPan( {
+			kinetic : false
 		} ), new ol.interaction.DragZoom( {
 			duration : 0,
 			condition : ol.events.condition.shiftKeyOnly
-		} ), new ol.interaction.DragPan( {
-			kinetic : false
+		} ), new ol.interaction.DragRotate( {
+			duration : 0
+		} ), new ol.interaction.DoubleClickZoom( {
+			duration : 0
+		} ), new ol.interaction.MouseWheelZoom( {
+			duration : 0,
+			constrainResolution : true
+		} ), new ol.interaction.PinchZoom( {
+			duration : 0,
+			constrainResolution : true
+		} ), new ol.interaction.PinchRotate( {
+			duration : 0
 		} ) ];
 
 		for ( var i in interactions ) {
@@ -611,9 +613,9 @@
 
 				_self.olMap.addLayer( olWCSLayer );
 				_self.layers.push( uWCSLayer );
-				
+
 				uWCSLayer.setMap( _self.olMap, _load );
-				
+
 				var extent = ol.proj.transformExtent( uWCSLayer.getBoundingBox(), "EPSG:4326", _self.getCRS() );
 				setExtent( extent );
 				deferred.resolve( true );
@@ -641,9 +643,9 @@
 
 						_self.olMap.addLayer( olWCSLayer );
 						_self.layers.push( uWCSLayer );
-						
+
 						uWCSLayer.setMap( _self.olMap, _load );
-						
+
 						if ( extent && Array.isArray( extent ) ) {
 							setExtent( extent );
 						} else {
@@ -871,7 +873,7 @@
 		return deferred.promise();
 	};
 
-	
+
 	/**
 	 * Cluster 레이어를 추가한다.
 	 * 
@@ -903,7 +905,7 @@
 
 		return deferred.promise();
 	};
-	
+
 
 	/**
 	 * 지도 새로고침.
@@ -913,12 +915,17 @@
 
 		if ( _self.olMap ) {
 			var view = _self.olMap.getView();
-//			view.setCenter( [ view.getCenter()[ 0 ] + 5, view.getCenter()[ 1 ] ] );
-			view.setCenter( [ view.getCenter()[ 0 ] + 0.0001, view.getCenter()[ 1 ] ] );
+			view.dispatchEvent( {
+				type : 'change:center'
+			} );
 
-			window.setTimeout( function() {
-				view.setCenter( [ view.getCenter()[ 0 ] - 0.0001, view.getCenter()[ 1 ] ] );
-			}, 1 );
+			view.dispatchEvent( {
+				type : 'change:rotation'
+			} );
+
+			view.dispatchEvent( {
+				type : 'change:resolution'
+			} );
 
 			_self.olMap.updateSize();
 		}

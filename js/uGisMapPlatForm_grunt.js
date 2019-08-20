@@ -5,7 +5,7 @@
  * 
  * Author : LeeJaeHyuk
  * 
- * Date : 2019.03.14
+ * Date : 2019.08.20
  */
 ( function(window, jQuery) {
 	"use strict";
@@ -17,7 +17,8 @@
 
 	window._$ = jQuery;
 	window.ugmp = {
-		version : "1.4.1",
+		version : "1.4.3",
+		etc : {},
 		toc : {},
 		util : {},
 		layer : {},
