@@ -12,11 +12,11 @@
 	 * 
 	 * <pre>
 	 * var ugVectorLayer = new ugmp.layer.uGisVectorLayer( {
-	 *	srsName :'EPSG:3857',
-	 *	features : [ new ol.Feature( {
-	 *		geometry : new ol.geom.Polygon({...})
-	 *	} ) ],
-	 *	style : new ol.style.Style({...})
+	 * 	srsName :'EPSG:3857',
+	 * 	features : [ new ol.Feature( {
+	 * 	 	geometry : new ol.geom.Polygon({...})
+	 * 	} ) ],
+	 * 	style : new ol.style.Style({...})
 	 * } );
 	 * </pre>
 	 * 
@@ -72,6 +72,7 @@
 			_this : _self,
 			clear : _self.clear,
 			srsName : _self.srsName,
+			getFeatures : _self.getFeatures,
 			addFeatures : _self.addFeatures
 		} );
 
@@ -90,6 +91,17 @@
 	ugmp.layer.uGisVectorLayer.prototype.addFeatures = function(features_) {
 		var _self = this._this || this;
 		_self.olLayer.getSource().addFeatures( features_ );
+	};
+
+
+	/**
+	 * 레이어의 Feature 리스트를 가져온다.
+	 * 
+	 * @return features {Array.<ol.Feature>} 피처 리스트.
+	 */
+	ugmp.layer.uGisVectorLayer.prototype.getFeatures = function() {
+		var _self = this._this || this;
+		return _self.olLayer.getSource().getFeatures();
 	};
 
 

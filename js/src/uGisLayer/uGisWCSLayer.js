@@ -8,6 +8,20 @@
 	 * 
 	 * @constructor
 	 * 
+	 * @example
+	 * 
+	 * <pre>
+	 * var ugWcsLayer = new ugmp.layer.uGisWCSLayer( {
+	 * 	useProxy : false,
+	 * 	serviceURL : 'http://mapstudio.uitgis.com/ms/wcs?KEY=key',
+	 * 	format : 'image/jpeg',
+	 * 	version : '2.0.1',
+	 * 	identifier : 'LAYER_ID',
+	 * 	boundingBox : [...],
+	 * 	useScaleRefresh : false
+	 * } );
+	 * </pre>
+	 * 
 	 * @param opt_options {Object}
 	 * @param opt_options.useProxy {Boolean} 프록시 사용 여부. Default is `false`.
 	 * @param opt_options.serviceURL {String} WCS 서비스 URL.
@@ -15,8 +29,7 @@
 	 * @param opt_options.format {String} 이미지 포맷. Default is `image/jpeg`.
 	 * @param opt_options.version {String} WCS 버전. Default is `1.1.1`.
 	 * @param opt_options.identifier {String} 레이어 아이디.
-	 * @param opt_options.coverageId {String} coverageId.
-	 * @param opt_options.boundingBox {Array} boundingBox.
+	 * @param opt_options.boundingBox {Array} boundingBox. `※EPSG:4326`.
 	 * @param opt_options.useScaleRefresh {Boolean} 이미지 해상도 자동 새로고침 사용 여부. Default is `false`.
 	 * 
 	 * @Extends {ugmp.layer.uGisLayerDefault}

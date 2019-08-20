@@ -28,6 +28,7 @@
 	 * @param opt_options.serviceURL {String} WMTS 서비스 URL.
 	 * 
 	 * @param opt_options.layer {String} 레이어 이름.
+	 * @param opt_options.style {String} 스타일 이름.
 	 * @param opt_options.version {String} WMTS 버전. Default is `1.0.0`.
 	 * @param opt_options.matrixSet {String} matrixSet.
 	 * @param opt_options.originExtent {Array.<Number>} originExtent.
@@ -43,6 +44,7 @@
 		var _super = null;
 
 		this.layer = null;
+		this.style = null;
 		this.version = null;
 		this.matrixSet = null;
 		this.originExtent = null;
@@ -63,6 +65,7 @@
 
 			_self.version = ( options.version !== undefined ) ? options.version : "1.0.0";
 			_self.layer = ( options.layer !== undefined ) ? options.layer : "";
+			_self.style = ( options.style !== undefined ) ? options.style : "";
 			_self.matrixSet = ( options.matrixSet !== undefined ) ? options.matrixSet : "";
 			_self.originExtent = _self._setOriginExtent( options.originExtent );
 			_self.wmtsCapabilities = _self._setWmtsCapabilities( options.wmtsCapabilities );
@@ -146,6 +149,7 @@
 		if ( _self.olLayer && use_ ) {
 			var WMTSOptions = new ol.source.WMTS.optionsFromCapabilities( _self.wmtsCapabilities.olJson, {
 				layer : _self.layer,
+				style : _self.style,
 				matrixSet : _self.matrixSet
 			} );
 
