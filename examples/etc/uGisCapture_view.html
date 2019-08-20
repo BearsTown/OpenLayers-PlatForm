@@ -7,118 +7,118 @@
 
 <style>
 html {
-	width: 100%;
-	height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 body {
-	width: 100%;
-	height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .baseMapListDIV {
-	float: left;
-	width: 20%;
-	height: 100%;
-	overflow: auto;
-	position: relative;
-	padding-left: 10px;
-	background-color: white;
+  float: left;
+  width: 20%;
+  height: 100%;
+  overflow: auto;
+  position: relative;
+  padding-left: 10px;
+  background-color: white;
 }
 
 .mapMainDIV {
-	float: right;
-	width: 80%;
-	height: 100%;
-	position: relative;
-	background-color: lightgray;
+  float: right;
+  width: 80%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background-color: lightgray;
 }
 
 .baseMapDIV {
-	z-index: 20;
-	width: 100%;
-	height: 100%;
-	position: absolute !important;
+  z-index: 20;
+  width: 100%;
+  height: 100%;
+  position: absolute !important;
 }
 
 .mashUpMapDIV {
-	z-index: 30;
-	width: 100%;
-	height: 100%;
-	position: absolute !important;
+  z-index: 30;
+  width: 100%;
+  height: 100%;
+  position: absolute !important;
 }
 
 @media ( max-width : 1500px) {
-	.baseMapListDIV {
-		width: 40%;
-	}
-	.mapMainDIV {
-		width: 60%;
-	}
+  .baseMapListDIV {
+    width: 40%;
+  }
+  .mapMainDIV {
+    width: 60%;
+  }
 }
 
 @media ( max-width : 900px) {
-	.baseMapListDIV {
-		width: 50%;
-	}
-	.mapMainDIV {
-		width: 50%;
-	}
+  .baseMapListDIV {
+    width: 50%;
+  }
+  .mapMainDIV {
+    width: 50%;
+  }
 }
 
 .alignCenterDiv-table {
-	top: 50%;
-	left: 50%;
-	width: 0%;
-	height: 0%;
-	display: table;
-	z-index: 99999;
-	position: absolute !important;
-	background-color: rgba(0, 0, 0, 0.7);
-	transform: translate(-50%, -50%);
-	transition: width 1s ease 0s, height 1s ease 0s;
+  top: 50%;
+  left: 50%;
+  width: 0%;
+  height: 0%;
+  display: table;
+  z-index: 99999;
+  position: absolute !important;
+  background-color: rgba(0, 0, 0, 0.7);
+  transform: translate(-50%, -50%);
+  transition: width 1s ease 0s, height 1s ease 0s;
 }
 
 .alignCenterDiv-cell {
-	display: table-cell;
-	vertical-align: middle;
+  display: table-cell;
+  vertical-align: middle;
 }
 
 .cBox {
-	width: 70%;
-	height: 80%;
-	display: block;
-	margin: 0 auto;
-	background-color: white;
+  width: 70%;
+  height: 80%;
+  display: block;
+  margin: 0 auto;
+  background-color: white;
 }
 
 .captureBtnDIV {
-	right: 10px;
-	bottom: 10px;
-	z-index: 3000;
-	position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 3000;
+  position: absolute;
 }
 
 .btns {
-	width: 15%;
-	float: right;
-	height: 80%;
-	margin: 0 auto;
+  width: 15%;
+  float: right;
+  height: 80%;
+  margin: 0 auto;
 }
 
-.btns button, .btns button:hover, .btns button:disabled, .btns button.disabled
-	{
-	border: none !important;
-	background: none !important;
+.btns button, .btns button:hover, .btns button:disabled, .btns button.disabled {
+  border: none !important;
+  background: none !important;
 }
 
 .btns button span {
-	color: #9aca3c;
-	font-size: 40px;
+  color: #9aca3c;
+  font-size: 40px;
 }
 
 .btns button span:hover {
-	color: #ff846f !important;
+  color: #ff846f !important;
 }
 </style>
 
@@ -135,17 +135,17 @@ body {
 
 <!-- OpenLayers3 Script, CSS Load -->
 <link href="../../lib/openLayers3-v4.6.5/ol.css" rel="stylesheet">
-<script src="../../lib/openLayers3-v4.6.5/ol.min.js"></script>
+<script src="../../lib/openLayers3-v4.6.5/ol-debug.js"></script>
 
 <!-- Map API Key Script Load -->
 <!-- ★ Required when using BaseMap ★ -->
 <script src="../../lib/OpenLayers2.13.js"></script>
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b9eee9b5b274ba36817d07ed12b75581"></script>
-<!-- <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID"></script> -->
+<script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=2zt5v10gf2"></script>
 <script src="http://map.ngii.go.kr/openapi/ngiiMap.js?apikey=BE45C5F6FC53B39B751EBB5B28B06EAB"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDuTiBLO4pGc3kbYJf-3qHJSZhnZBdXfpw" defer></script>
 <script src="http://map.vworld.kr/js/apis.do?type=Base&apiKey=A782B1B4-5C6A-3D0A-A322-A3E4EE190B94&domain=http://gwp.uitgis.com:8080"></script>
-<script>window.API_KEY_BING="AkoPAT2pQ_S1OYqnoKYiWIpBsDqeSmpwDZSOKE68EcnHGt1Wfp0u2dkzuee9tfS8";</script>
+<script>window.API_KEY_BING = "AkoPAT2pQ_S1OYqnoKYiWIpBsDqeSmpwDZSOKE68EcnHGt1Wfp0u2dkzuee9tfS8";</script>
 
 <!-- ★ Required when using uGisCapture ★ -->
 <script src="../../lib/html2canvas-etc.js"></script>
@@ -287,28 +287,30 @@ body {
 					useExtent : true
 				} );
 
-
-				ugmp.uGisConfig.addLoadEventListener( ugMap.getDataViewId(), function(e, loaded) {
-					$( "#captureBtn" ).prop( "disabled", !loaded );
-				} );
-
-
 				// 캡쳐 모드 활성화
 				$( "#captureModBtn" ).on( "click", function() {
 					$( "#print" ).show();
 					$( "#print" ).width( '100%' );
 					$( "#print" ).height( '100%' );
-
-					setTimeout( function() {
-						ugCapture = new ugmp.uGisCapture( {
-							useSync : true,
-							uGisMap : ugMap,
-							uGisBaseMap : ugBaseMap,
-							appendElement : $( "#print" ).find( ".cBox" )[ 0 ]
-						} );
-					}, 1000 );
 				} );
 
+				// 캡쳐 모드 활성화
+				$( "#print" )[ 0 ].addEventListener( "transitionend", function(e) {
+					if ( this !== e.target || e.propertyName !== "width" ) return false;
+					e.stopPropagation();
+
+					ugCapture = new ugmp.uGisCapture( {
+						useSync : true,
+						uGisMap : ugMap,
+						uGisBaseMap : ugBaseMap,
+						appendElement : $( "#print" ).find( ".cBox" )[ 0 ],
+						readyFunction : function() {
+							ugmp.uGisConfig.addLoadEventListener( ugCapture.getUgisMap().getDataViewId(), function(e, loaded) {
+								$( "#captureBtn" ).prop( "disabled", !loaded );
+							} );
+						}
+					} );
+				} );
 
 				// 캡쳐 시작
 				$( "#captureBtn" ).on( "click", function() {
@@ -332,6 +334,7 @@ body {
 					$( "#print" ).width( '0%' );
 					$( "#print" ).height( '0%' );
 					$( "#print" ).find( ".cBox" ).empty();
+					$( "#captureBtn" ).prop( "disabled", true );
 				} );
 			} );
 </script>

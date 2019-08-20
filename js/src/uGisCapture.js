@@ -112,7 +112,9 @@
 		mapMainDIV.id = _self.captureDivId;
 		mapMainDIV.style.width = "100%";
 		mapMainDIV.style.height = "100%";
+		mapMainDIV.style.overflow = "hidden";
 		mapMainDIV.style.position = "relative";
+		mapMainDIV.style.backgroundColor = "white";
 
 		var baseMapDIV = document.createElement( "div" );
 		baseMapDIV.id = _self.captureBaseMapId;
@@ -162,38 +164,50 @@
 			_self.captureUgMap.getMap().removeControl( controls[ i ] );
 		}
 
+		// 캡쳐 기본 상호작용 모두 제거
+		var interactions = _self.captureUgMap.getMap().getInteractions().getArray();
+		for ( var i = interactions.length - 1; i >= 0; i-- ) {
+			if ( interactions[ i ] instanceof ol.interaction.DragRotate ) {
+				_self.captureUgMap.getMap().removeInteraction( interactions[ i ] );
+				break;
+			}
+		}
+
+		// 드래그 패닝
+		var ugDragPan = new ugmp.control.uGisDragPan( {
+			uGisMap : _self.captureUgMap,
+			useDragPan : false,
+			cursorCssName : "cursor-default",
+			activeChangeListener : function(state_) {
+				console.log( "uGisDragPan : " + state_ );
+			}
+		} );
+
+		ugDragPan.setActive( true );
+
 
 		// 캡쳐 배경 지도 설정 및 생성
 		if ( _self.origin_ugBaseMap ) {
 			_self.captureUgBaseMap = new ugmp.baseMap.uGisBaseMap( {
 				target : _self.captureBaseMapId,
 				uGisMap : _self.captureUgMap,
-				baseMapKey : "osm_none"
+				baseMapKey : "osm_none",
+				useElementMargin : false
 			} );
+
+			var baseMapDIV = document.getElementById( _self.captureBaseMapId );
+			baseMapDIV.firstElementChild.style.top = null;
+			baseMapDIV.firstElementChild.style.left = null;
+			baseMapDIV.firstElementChild.style.overflow = null;
+			baseMapDIV.firstElementChild.style.width = "100%";
+			baseMapDIV.firstElementChild.style.height = "100%";
 
 			_self.captureUgBaseMap.setVisible( _self.origin_ugBaseMap.getVisible() );
 			_self.captureUgBaseMap.setOpacity( _self.origin_ugBaseMap.getOpacity() );
 
 			var baseMapKey = _self.origin_ugBaseMap.getSelectedBaseMap();
 
-			if ( baseMapKey.split( "_" )[ 0 ] !== "custom" ) {
-				_self.captureUgBaseMap.changeBaseMap( baseMapKey );
-
-				if ( baseMapKey === "osm_gray" ) {
-					var osm = _self.captureUgBaseMap._this.baseMapList[ "osm" ][ "object" ];
-					var layers = osm._this.apiMap.getLayers().getArray();
-
-					for ( var i in layers ) {
-						osm._this.apiMap.removeLayer( layers[ i ] );
-					}
-
-					osm._this.apiMap.addLayer( new ol.layer.Tile( {
-						source : new ol.source.XYZ( {
-							url : ugmp.uGisConfig.getProxy() + "http://{a-c}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png"
-						} )
-					} ) );
-				}
-			} else {
+			if ( baseMapKey.indexOf( "custom" ) > -1 ) {
 				var originObj = _self.origin_ugBaseMap._this.baseMapList[ baseMapKey ].object;
 				var uWMTSLayer = originObj._this.uWMTSLayer;
 
@@ -222,11 +236,43 @@
 
 				_self.captureUgBaseMap.addBaseMapType( bKey, custom );
 				_self.captureUgBaseMap.changeBaseMap( bKey );
+			} else if ( baseMapKey.indexOf( "TMS" ) > -1 ) {
+				var code = baseMapKey.split( "_" )[ 0 ];
+				
+				var tms = new ugmp.baseMap.uGisBaseMapTMS_vWorld( {
+					baseCode : code,
+					projection : _self.origin_ugBaseMap.getApiMap().getView().getProjection().getCode()
+				} );
+
+				_self.captureUgBaseMap.addBaseMapType( code, tms );
+				_self.captureUgBaseMap.changeBaseMap( baseMapKey );
+
+				var layers = _self.captureUgBaseMap.getApiMap().getLayers().getArray();
+
+				for ( var i in layers ) {
+					var urls = layers[ i ].getSource().getUrls();
+					var reUrls = [];
+					for ( var u in urls ) {
+						reUrls.push( ugmp.uGisConfig.getProxy() + urls[ u ] );
+					}
+					layers[ i ].getSource().setUrls( reUrls );
+				}
+			} else {
+				_self.captureUgBaseMap.changeBaseMap( baseMapKey );
+
+				if ( baseMapKey === "osm_gray" ) {
+					var layers = _self.captureUgBaseMap.getApiMap().getLayers().getArray();
+
+					for ( var i in layers ) {
+						layers[ i ].getSource().setUrl( ugmp.uGisConfig.getProxy() + "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png" );
+					}
+				}
 			}
 		}
 
 		// 캡쳐 지도 ol.View 설정
 		var originView = _self.origin_ugMap.getMap().getView();
+		originView.setRotation( 0 );
 		_self.captureUgMap.getMap().setView( new ol.View( {
 			zoom : originView.getZoom(),
 			center : originView.getCenter(),
@@ -236,7 +282,7 @@
 			minZoom : originView.getMinZoom(),
 			resolution : originView.getResolution(),
 			resolutions : originView.getResolutions(),
-			rotation : originView.getRotation()
+			rotation : 0
 		} ) );
 
 		// 대상 지도와 캡쳐 지도 동기화
@@ -349,8 +395,8 @@
 				var def_add = addObject.add( addedUgLayer );
 				_self.arrDeferred_ready.push( def_add );
 				def_add.then( function(res) {
-					loop( i + 1 );
 				} );
+				loop( i + 1 );
 			} else {
 				_self.ready();
 			}
@@ -578,6 +624,9 @@
 	ugmp.uGisCapture.prototype.runCapture = function(callBack_) {
 		var _self = this._this || this;
 
+		document.getElementById( _self.captureBaseMapId ).style.overflow = "";
+		document.getElementById( _self.captureBaseMapId ).firstElementChild.style.overflow = "";
+
 		if ( typeof callBack_ !== "function" ) {
 			return false;
 		}
@@ -588,20 +637,23 @@
 			baseMapCode = _self.origin_ugBaseMap.getSelectedBaseMap().split( "_" )[ 0 ];
 		}
 
-		if ( baseMapCode.indexOf( "google" ) > -1 ) {
+		if ( baseMapCode.indexOf( "naver" ) > -1 || baseMapCode.indexOf( "daum" ) > -1 || baseMapCode.indexOf( "baroEmap" ) > -1 ) {
+			document.getElementById( _self.captureDivId ).scrollIntoView( false );
+			html2canvas_etc( document.getElementById( _self.captureDivId ), {
+				useCORS : true,
+				logging : false,
+				proxy : ugmp.uGisConfig.getProxy()
+			} ).then( function(canvas) {
+				callBack_.call( this, canvas );
+			} );
+		} else {
+			document.getElementById( _self.captureDivId ).scrollIntoView( false );
 			html2canvas_google( document.getElementById( _self.captureDivId ), {
 				useCORS : true,
 				proxy : ugmp.uGisConfig.getProxy(),
 				onrendered : function(canvas) {
 					callBack_.call( this, canvas );
 				}
-			} );
-		} else {
-			html2canvas_etc( document.getElementById( _self.captureDivId ), {
-				useCORS : true,
-				proxy : ugmp.uGisConfig.getProxy()
-			} ).then( function(canvas) {
-				callBack_.call( this, canvas );
 			} );
 		}
 	};
