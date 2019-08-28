@@ -448,46 +448,19 @@
 		var view = _self.uGisMap.getMap().getView();
 
 		_self.uGisMap.getMap().on( "change:view", function(evt1_) {
-			ol.Observable.unByKey( _self.key_zoomEnd );
 			ol.Observable.unByKey( _self.key_changeResolution );
 
-			detectZoomChange_temp( evt1_.target.getView() );
+			detectZoomChange( evt1_.target.getView() );
 		} );
 
-		
-		detectZoomChange_temp( view );
-		
 
-		function detectZoomChange_temp(view_) {
+		detectZoomChange( view );
+
+
+		function detectZoomChange(view_) {
 			_self.key_changeResolution = view_.on( "change:resolution", function() {
 				_changeResolution();
 			} );
-		}
-
-		function detectZoomChange(view_) {
-			var targetView = view_;
-
-			var zoomEnd = function(evt2_) {
-				var v = evt2_.map.getView();
-				var newZoomLevel = v.getZoom();
-
-				if ( currentZoomLevel != newZoomLevel ) {
-					currentZoomLevel = newZoomLevel;
-					_changeResolution();
-				}
-
-				_self.key_zoomEnd = _self.uGisMap.getMap().once( "moveend", function(evt3_) {
-					zoomEnd( evt3_ );
-				} );
-			};
-
-
-			_self.key_changeResolution = targetView.once( "change:resolution", function(evt4_) {
-				_self.uGisMap.getMap().once( "moveend", function(evt5_) {
-					zoomEnd( evt5_ );
-				} );
-			} );
-
 		}
 
 
@@ -596,7 +569,7 @@
 
 		olLayer.getSource().getParams().LAYERS = _self.setZtreeLayerData();
 		if ( cacheClear_ ) {
-			olLayer.getSource().getParams().refTime = new Date().getMilliseconds();			
+			olLayer.getSource().getParams().refTime = new Date().getMilliseconds();
 		}
 		olLayer.getSource().updateParams( olLayer.getSource().getParams() );
 

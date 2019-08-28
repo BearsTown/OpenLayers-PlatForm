@@ -27,6 +27,7 @@
 		this.useMinMaxZoom = null;
 
 		this.uGisLayerNTocObjects = null;
+		this.key_changeResolution = null;
 
 
 		/**
@@ -79,40 +80,16 @@
 		var tempZoomEnd = null;
 
 		_self.uGisMap.getMap().on( "change:view", function(evt1_) {
-			ol.Observable.unByKey( tempZoomEnd );
-			detectZoomChange( evt1_.target.getView() );
+			ol.Observable.unByKey( _self.key_changeResolution );
+
+			_self.key_changeResolution = evt1_.target.getView().on( "change:resolution", function(evt_) {
+				_self._scaleVisibleRefresh();
+			} );
 		} );
 
-
-		detectZoomChange( _self.uGisMap.getMap().getView() );
-
-
-		function detectZoomChange(view_) {
-			var targetView = view_;
-
-			var zoomEnd = function(evt2_) {
-				var v = evt2_.map.getView();
-				var newZoomLevel = v.getZoom();
-
-				if ( currentZoomLevel != newZoomLevel ) {
-					currentZoomLevel = newZoomLevel;
-
-					_self._scaleVisibleRefresh();
-				}
-
-				tempZoomEnd = _self.uGisMap.getMap().once( "moveend", function(evt3_) {
-					zoomEnd( evt3_ );
-				} );
-			};
-
-
-			targetView.once( "change:resolution", function(evt4_) {
-				_self.uGisMap.getMap().once( "moveend", function(evt5_) {
-					zoomEnd( evt5_ );
-				} );
-			} );
-
-		}
+		_self.key_changeResolution = _self.uGisMap.getMap().getView().on( "change:resolution", function(evt_) {
+			_self._scaleVisibleRefresh();
+		} );
 	};
 
 
