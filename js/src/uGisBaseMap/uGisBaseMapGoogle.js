@@ -29,22 +29,22 @@
 			options.maxExtent = ol.proj.get( "EPSG:900913" ).getExtent();
 			options.mapTypes = {
 				normal : {
-					id : google.maps.MapTypeId.ROADMAP, // roadmap
+					id : "roadmap", // google.maps.MapTypeId.ROADMAP
 					minZoom : 0,
 					maxZoom : 21
 				},
 				satellite : {
-					id : google.maps.MapTypeId.SATELLITE, // satellite
+					id : "satellite", // google.maps.MapTypeId.SATELLITE
 					minZoom : 0,
 					maxZoom : 19
 				},
 				hybrid : {
-					id : google.maps.MapTypeId.HYBRID, // hybrid
+					id : "hybrid", // google.maps.MapTypeId.HYBRID
 					minZoom : 0,
 					maxZoom : 19
 				},
 				terrain : {
-					id : google.maps.MapTypeId.TERRAIN, // terrain
+					id : "terrain", // google.maps.MapTypeId.TERRAIN
 					minZoom : 0,
 					maxZoom : 19
 				}

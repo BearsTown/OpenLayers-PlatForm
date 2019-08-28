@@ -29,17 +29,17 @@
 			options.maxExtent = ol.proj.get( "EPSG:5181" ).getExtent();
 			options.mapTypes = {
 				normal : {
-					id : naver.maps.MapTypeId[ "NORMAL" ], // normal
+					id : "normal", // naver.maps.MapTypeId[ "NORMAL" ]
 					minZoom : 1,
 					maxZoom : 14
 				},
 				satellite : {
-					id : naver.maps.MapTypeId[ "SATELLITE" ], // satellite
+					id : "satellite", // naver.maps.MapTypeId[ "SATELLITE" ] 
 					minZoom : 1,
 					maxZoom : 14
 				},
 				hybrid : {
-					id : naver.maps.MapTypeId[ "HYBRID" ], // hybrid
+					id : "hybrid", // naver.maps.MapTypeId[ "HYBRID" ]
 					minZoom : 1,
 					maxZoom : 14
 				}

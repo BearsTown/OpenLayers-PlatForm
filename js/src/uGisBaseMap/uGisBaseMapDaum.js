@@ -29,17 +29,17 @@
 			options.maxExtent = ol.proj.get( "EPSG:5181" ).getExtent();
 			options.mapTypes = {
 				normal : {
-					id : daum.maps.MapTypeId[ "NORMAL" ], // 1
+					id : 1, // daum.maps.MapTypeId[ "NORMAL" ]
 					minZoom : 1,
 					maxZoom : 14
 				},
 				satellite : {
-					id : daum.maps.MapTypeId[ "SKYVIEW" ], // 2
+					id : 2, // daum.maps.MapTypeId[ "SKYVIEW" ]
 					minZoom : 1,
 					maxZoom : 15
 				},
 				hybrid : {
-					id : daum.maps.MapTypeId[ "HYBRID" ], // 3
+					id : 3, // daum.maps.MapTypeId[ "HYBRID" ]
 					minZoom : 1,
 					maxZoom : 15
 				}

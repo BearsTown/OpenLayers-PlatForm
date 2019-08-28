@@ -45,7 +45,7 @@
 						return [ base ];
 					},
 					minZoom : 0,
-					maxZoom : 13
+					maxZoom : 20 // 13
 				},
 				satellite : {
 					id : "SATELLITE",
@@ -58,7 +58,7 @@
 						return [ satellite ];
 					},
 					minZoom : 0,
-					maxZoom : 13
+					maxZoom : 20 // 13
 				},
 				hybrid : {
 					id : "VHYBRID",
@@ -76,7 +76,7 @@
 						return [ satellite, hybrid ];
 					},
 					minZoom : 0,
-					maxZoom : 13
+					maxZoom : 20 // 13
 				},
 				gray : {
 					id : "VGRAY",
@@ -89,7 +89,7 @@
 						return [ gray ];
 					},
 					minZoom : 0,
-					maxZoom : 12
+					maxZoom : 20 // 12
 				},
 				midnight : {
 					id : "VMIDNIGHT",
@@ -102,7 +102,7 @@
 						return [ midnight ];
 					},
 					minZoom : 0,
-					maxZoom : 12
+					maxZoom : 20 // 12
 				}
 			};
 
