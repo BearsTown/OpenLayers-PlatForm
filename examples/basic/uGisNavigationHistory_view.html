@@ -21,10 +21,6 @@ body {
   height: 100%;
   background-color: lightgray;
 }
-
-.btn {
-  width: 90px;
-}
 </style>
 
 <!-- properties Script Load-->
@@ -56,12 +52,10 @@ body {
 
 <body>
 
-	<nav style="position: absolute; z-index: 1; width: 100%;">
-		<ul class="pager">
-			<li><a id="btn_previous" class="btn disabled">Previous</a></li>
-			<li><a id="btn_next" class="btn disabled">Next</a></li>
-		</ul>
-	</nav>
+	<div style="position: absolute; z-index: 10; left: 50%; transform: translate(-50%, 20%);">
+		<button id="btn_previous" class="btn btn-default" style="width: 90px;">Previous</button>
+		<button id="btn_next" class="btn btn-default" style="width: 90px;">Next</button>
+	</div>
 	<div id="map" class="map"></div>
 
 </body>

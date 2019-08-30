@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+
+<style>
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  background-color: lightgray;
+}
+</style>
+
+<!-- properties Script Load-->
+<script src="../../js/properties.js"></script>
+
+<!-- jQuery Script, CSS Load -->
+<link href="../../lib/jQuertUI-v1.11.2/jquery-ui.min.css" rel="stylesheet">
+<script src="../../lib/jQuery-v3.2.1/jquery-3.2.1.min.js"></script>
+
+<!-- BootStrap Script, CSS Load -->
+<link href="../../lib/bootstrap-v3.3.5/bootstrap.min.css" rel="stylesheet">
+<script src="../../lib/bootstrap-v3.3.5/bootstrap.min.js"></script>
+
+<!-- OpenLayers3 Script, CSS Load -->
+<link href="../../lib/openLayers3-v4.6.5/ol.css" rel="stylesheet">
+<script src="../../lib/openLayers3-v4.6.5/ol.min.js"></script>
+
+<!-- uGisMapPlatForm Script, CSS Load-->
+<link href="../../css/uGisCSS.css" rel="stylesheet">
+<script src="../../lib/proj4/proj4.js"></script>
+<script src="../../lib/EPSG_custom.js"></script>
+<!-- <script src="../../js/uGisMapPlatForm.js"></script> -->
+<!-- <script src="../../js/uGisMapPlatFormScript-debug.js"></script> -->
+<script src="../../js/uGisMapPlatFormScript.min.js"></script>
+
+<title>uGisVector3DLayer</title>
+
+</head>
+
+<body>
+
+	<div style="position: absolute; z-index: 10; left: 50%; transform: translate(-50%, 20%);">
+		<button id="btn_rendering" class="btn btn-default">3D Rendering</button>
+	</div>
+	<div id="map" class="map"></div>
+
+</body>
+
+
+<script>
+	$( document ).ready( function() {
+
+		// uGisMapPlatForm Config 설정
+		ugmp.uGisConfig.init( {
+			proxy : ugmp.contextPath + "/proxy.jsp?url="
+		} );
+
+		// uGisMap 생성
+		ugMap = new ugmp.uGisMap( {
+			target : "map",
+			crs : "EPSG:3857",
+			center : [ 0, 0 ],
+			useMaxExtent : true,
+			useAltKeyOnly : false
+		} );
+
+		// uGisWMS 레이어 생성
+		ugWmsLayer = new ugmp.layer.uGisWMSLayer( {
+			useProxy : false,
+			singleTile : false,
+			serviceURL : "http://mapstudio.uitgis.com/ms/wms?KEY=97C9E25B-494A-E1E6-5036-EE5E45187BE7",
+			ogcParams : {
+				LAYERS : "ROOT",
+				CRS : ugMap.getCRS(),
+				STYLES : "",
+				FORMAT : "image/png",
+				BGCOLOR : "0xffffff",
+				EXCEPTIONS : "BLANK",
+				LABEL : "HIDE_OVERLAP",
+				GRAPHIC_BUFFER : "64",
+				ANTI : "true",
+				TEXT_ANTI : "true",
+				VERSION : "1.3.0"
+			}
+		} );
+
+		// uGisMap에 WMS 레이어 추가
+		ugWMS = ugMap.addWMSLayer( {
+			uWMSLayer : ugWmsLayer,
+			useExtent : false
+		} );
+
+
+		// uGisGetFeature 생성
+		ugFeatures = new ugmp.service.uGisGetFeature( {
+			useProxy : true,
+			srsName : ugMap.getCRS(),
+			maxFeatures : 10000,
+			typeName : 'LV14_SPBD_BULD_3D',
+			serviceURL : 'http://mapstudio.uitgis.com/ms/wfs?KEY=1BFAB2FC-FF8C-21DA-CE01-1AAB2049DD46',
+			filter : new ol.format.filter.EqualTo( 'KO_ROAD_NM', '테헤란로' ),
+			dataViewId : ugMap.getDataViewId()
+		} );
+
+		ugFeatures.then( function(res_) {
+			// uGisVector3DLayer 레이어 생성
+			ugVector3DLayer = new ugmp.layer.uGisVector3DLayer( {
+				initBuild : true,
+				maxResolution : 0.6,
+				features : res_.features,
+				srsName : ugMap.getCRS(),
+				labelColumn : 'KOR_BLD_NM',
+				heightColumn : 'HEIGHT',
+				style : new ol.style.Style( {
+					stroke : new ol.style.Stroke( {
+						color : "RED",
+						width : 1
+					} ),
+					fill : new ol.style.Fill( {
+						color : [ 0, 0, 0, 0.4 ]
+					} )
+				} )
+			} );
+
+			// uGisMap에 Vector3D 레이어 추가
+			uVector3D = ugMap.addVector3DLayer( {
+				uVector3DLayer : ugVector3DLayer,
+				useExtent : false
+			} );
+
+			ugMap.setExtent( [ 14141495.269997006, 4508961.938359612, 14141799.80473314, 4509143.667805382 ] );
+		} );
+
+		$( "#btn_rendering" ).on( "click", function() {
+			ugVector3DLayer.getRender3D().buildToggle();
+		} );
+	} );
+</script>
+</html>

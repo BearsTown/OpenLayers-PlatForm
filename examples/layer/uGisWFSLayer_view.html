@@ -81,7 +81,15 @@ body {
 			layerName : "LV14_SCCO_EMD",
 			srsName : "EPSG:3857",
 			maxFeatures : 300,
-			dataViewId : ugMap.getDataViewId()
+			style : new ol.style.Style( {
+				stroke : new ol.style.Stroke( {
+					color : "white",
+					width : 5
+				} ),
+				fill : new ol.style.Fill( {
+					color : "red"
+				} )
+			} )
 		} );
 
 		// uGisMap에 WFS 레이어 추가

@@ -168,7 +168,7 @@ body {
 <body>
 
 	<div class="captureBtnDIV">
-		<button id="captureModBtn" type="button" class="btn btn-primary">Capture Mode</button>
+		<button id="captureModBtn" type="button" class="btn btn-default">Capture Mode</button>
 	</div>
 
 
@@ -277,7 +277,36 @@ body {
 					layerName : "LV14_SCCO_EMD",
 					srsName : ugMap.getCRS(),
 					maxFeatures : 300,
-					dataViewId : ugMap.getDataViewId()
+					style : function(feature, resolution) {
+						var featureStyle = new ol.style.Style( {
+							stroke : new ol.style.Stroke( {
+								color : "RED",
+								width : 2
+							} ),
+							fill : new ol.style.Fill( {
+								color : [ 255, 0, 0, 0.1 ]
+							} )
+						} );
+
+						var labelStyle = new ol.style.Style( {
+							text : new ol.style.Text( {
+								stroke : new ol.style.Stroke( {
+									color : '#FFFFFF',
+									width : 3
+								} ),
+								overflow : false,
+								font : 'bold 18px Verdana',
+								text : feature.get( "KOR_EMD_NM" )
+							} ),
+							geometry : function(feature) {
+								var retPoint = ugmp.util.uGisGeoSpatialUtil.getGeomCenter( feature.getGeometry() );
+								return new ol.geom.Point( retPoint );
+							}
+						} );
+
+						return [ featureStyle, labelStyle ];
+					},
+					filter : new ol.format.filter.like( 'ENG_EMD_NM', 'S*' )
 				} );
 
 
