@@ -50,6 +50,7 @@
 		srcPath + "/olPrototype/layer/vector.js",
 		srcPath + "/olPrototype/interaction/mouseWheelZoom.js",
 		
+		srcPath + "/etc/uGisRender3D.js",
 		srcPath + "/etc/uGisNavigationHistory.js",
 
 		srcPath + "/uGisService/filterDwithin.js",
@@ -68,6 +69,7 @@
 		srcPath + "/uGisLayer/uGisWCSLayer.js",
 		srcPath + "/uGisLayer/uGisWMTSLayer.js",
 		srcPath + "/uGisLayer/uGisVectorLayer.js",
+		srcPath + "/uGisLayer/uGisVector3DLayer.js",
 		srcPath + "/uGisLayer/uGisClusterLayer.js",
 
 		srcPath + "/uGisTOC/uGisTocDefault.js",

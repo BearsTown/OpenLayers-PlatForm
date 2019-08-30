@@ -12,12 +12,13 @@
 	 * 
 	 * <pre>
 	 * var ugWfsLayer = new ugmp.layer.uGisWFSLayer( {
-	 *	useProxy : true,
+	 * 	useProxy : true,
 	 * 	serviceURL : 'http://mapstudio.uitgis.com/ms/wfs?KEY=key',
 	 * 	layerName : 'world_country',
 	 * 	srsName : 'EPSG:3857',
 	 * 	maxFeatures : 300,
-	 * 	dataViewId : ugMap.getDataViewId()
+	 * 	style : new ol.style.Style({...}),
+	 * 	filter : new ol.format.filter.like( 'NAME', 'South*' )
 	 * } );
 	 * </pre>
 	 * 
@@ -29,8 +30,9 @@
 	 * 
 	 * @param opt_options.layerName {String} 레이어명.
 	 * @param opt_options.srsName {String} 좌표계. Default is `EPSG:3857`.
+	 * @param opt_options.filter {ol.format.filter.Filter} 필터. Default is `undefined`.
 	 * @param opt_options.maxFeatures {Number} 피처 최대 요청 갯수. Default is `1000`.
-	 * @param opt_options.dataViewId {String} View ID.
+	 * @param opt_options.style {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction} 스타일.
 	 * 
 	 * @Extends {ugmp.layer.uGisLayerDefault}
 	 * 
@@ -40,10 +42,11 @@
 		var _self = this;
 		var _super = null;
 
+		this.filter = null;
+		this.style = null;
 		this.srsName = null;
 		this.layerName = null;
 		this.maxFeatures = null;
-		this.dataViewId = null;
 
 
 		/**
@@ -58,11 +61,15 @@
 
 			_super = ugmp.layer.uGisLayerDefault.call( _self, options );
 
+			_self.filter = ( options.filter !== undefined ) ? options.filter : undefined;
+			_self.style = ( options.style !== undefined ) ? options.style : undefined;
 			_self.layerName = ( options.layerName !== undefined ) ? options.layerName : "";
 			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
 			_self.maxFeatures = ( options.maxFeatures !== undefined ) ? options.maxFeatures : 1000;
 
 			_self.olLayer = new ol.layer.Vector( {
+				declutter : true,
+				style : _self.style,
 				source : new ol.source.Vector()
 			} );
 
@@ -91,7 +98,7 @@
 	 * 
 	 * @return uFeatures {@link ugmp.service.uGisGetFeature} ugmp.service.uGisGetFeature.
 	 */
-	ugmp.layer.uGisWFSLayer.prototype.getFeatures = function(filter_, dataViewId_) {
+	ugmp.layer.uGisWFSLayer.prototype.getFeatures = function(dataViewId_) {
 		var _self = this._this || this;
 
 		var uFeatures = new ugmp.service.uGisGetFeature( {
@@ -101,7 +108,7 @@
 			typeName : _self.layerName,
 			maxFeatures : _self.maxFeatures,
 			outputFormat : "application/json",
-			filter : ( filter_ !== undefined ) ? filter_ : undefined,
+			filter : _self.filter,
 			dataViewId : dataViewId_,
 		} );
 

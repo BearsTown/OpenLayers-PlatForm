@@ -148,6 +148,7 @@
 			addWMTSLayer : _self.addWMTSLayer,
 			addVectorLayer : _self.addVectorLayer,
 			addClusterLayer : _self.addClusterLayer,
+			addVector3DLayer : _self.addVector3DLayer,
 			calculateScale : _self.calculateScale,
 			getDataViewId : _self.getDataViewId,
 			getScaleForZoom : _self.getScaleForZoom,
@@ -546,7 +547,7 @@
 			_self.olMap.addLayer( olWFSLayer );
 			_self.layers.push( uWFSLayer );
 
-			var uFeatures = uWFSLayer.getFeatures( undefined, _self.dataViewId );
+			var uFeatures = uWFSLayer.getFeatures( _self.dataViewId );
 
 			uFeatures.then( function(result_) {
 
@@ -859,6 +860,52 @@
 
 				if ( extent && extent[ 0 ] !== Infinity ) {
 					var transExtent = ol.proj.transformExtent( olVectorLayer.getSource().getExtent(), uVectorLayer.srsName, _self.mapCRS );
+					_self.setExtent( transExtent );
+				}
+			}
+
+			deferred.resolve( true );
+		} catch ( e ) {
+			ugmp.uGisConfig.alert_Error( "Error : " + e );
+			deferred.reject( false );
+			return deferred.promise();
+		}
+
+		return deferred.promise();
+	};
+	
+	
+	/**
+	 * Vector3D 레이어를 추가한다.
+	 * 
+	 * @param opt_options {Object}
+	 * @param opt_options.uVector3DLayer {ugmp.layer.uGisVector3DLayer} {@link ugmp.layer.uGisVector3DLayer} 객체.
+	 * @param opt_options.useExtent {Boolean} 레이어 추가 후 extent 설정 사용 여부.
+	 * 
+	 * `true`면 해당 레이어의 영역으로 지도 영역을 맞춘다. Default is `false`.
+	 * 
+	 * @return promise {Object} jQuery.Deferred.promise.
+	 */
+	ugmp.uGisMap.prototype.addVector3DLayer = function(opt_options) {
+		var _self = this._this || this;
+
+		var options = opt_options || {};
+
+		var uVector3DLayer = ( options.uVector3DLayer !== undefined ) ? options.uVector3DLayer : undefined;
+		var useExtent = ( options.useExtent !== undefined ) ? options.useExtent : false;
+
+		var deferred = _$.Deferred();
+
+		try {
+			var olVectorLayer = uVector3DLayer.getOlLayer();
+			_self.olMap.addLayer( olVectorLayer );
+			_self.layers.push( uVector3DLayer );
+
+			if ( useExtent ) {
+				var extent = olVectorLayer.getSource().getExtent();
+
+				if ( extent && extent[ 0 ] !== Infinity ) {
+					var transExtent = ol.proj.transformExtent( olVectorLayer.getSource().getExtent(), uVector3DLayer.srsName, _self.mapCRS );
 					_self.setExtent( transExtent );
 				}
 			}

@@ -112,7 +112,12 @@
 				name : 'uGisClusterLayer',
 				link_api : root + '/apidoc/ugmp.layer.uGisClusterLayer.html',
 				object : 'ugmp.layer.uGisClusterLayer'
-			}
+			},
+			VECTOR3D : {
+				name : 'uGisVector3DLayer',
+				link_api : root + '/apidoc/ugmp.layer.uGisVector3DLayer.html',
+				object : 'ugmp.layer.uGisVector3DLayer'
+			},
 		},
 
 		TOC : {
@@ -360,7 +365,7 @@
 				desc : '마우스 휠로 지도 줌 레벨 조절 시 AltKey 조합을 설정한다.',
 				link_code : root + '/examples/basic/wheelZoomAltKeyOnly.html',
 				link_view : root + '/examples/basic/wheelZoomAltKeyOnly_view.html',
-				img : imagesPath + 'basic/scroll.jpg',
+				img : imagesPath + 'basic/scroll.gif',
 				requires : [ PO.CONFIG, PO.MAP ]
 			},
 			HISTORY : {
@@ -485,8 +490,17 @@
 				desc : 'Cluster 레이어를 생성하고, 지도에 표현한다.',
 				link_code : root + '/examples/layer/uGisClusterLayer.html',
 				link_view : root + '/examples/layer/uGisClusterLayer_view.html',
-				img : imagesPath + 'layer/uGisClusterLayer.jpg',
+				img : imagesPath + 'layer/uGisClusterLayer.gif',
 				requires : [ PO.LAYER.CLUSTER ]
+			},
+			VECTOR3D : {
+				name : 'VECTOR3D',
+				title : 'uGisVector3DLayer - Vector3D 레이어',
+				desc : 'Vector 3D 레이어를 생성하고, 지도에 표현한다.',
+				link_code : root + '/examples/layer/uGisVector3DLayer.html',
+				link_view : root + '/examples/layer/uGisVector3DLayer_view.html',
+				img : imagesPath + 'layer/uGisVector3DLayer.gif',
+				requires : [ PO.LAYER.VECTOR3D ]
 			}
 		},
 
@@ -784,7 +798,7 @@
 			},
 			{
 				name : 'Layer',
-				examples : [ PE.LAYER.WMS, PE.LAYER.WFS, PE.LAYER.WCS, PE.LAYER.WMTS, PE.LAYER.VECTOR, PE.LAYER.CLUSTER ]
+				examples : [ PE.LAYER.WMS, PE.LAYER.WFS, PE.LAYER.WCS, PE.LAYER.WMTS, PE.LAYER.VECTOR, PE.LAYER.VECTOR3D, PE.LAYER.CLUSTER ]
 			},
 			{
 				name : 'TOC',

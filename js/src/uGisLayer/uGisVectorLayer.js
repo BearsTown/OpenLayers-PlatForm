@@ -58,6 +58,7 @@
 
 			_self.olLayer = new ol.layer.Vector( {
 				// zIndex : 8999,
+				declutter : true,
 				style : _self.style,
 				source : new ol.source.Vector( {
 					features : _self.features

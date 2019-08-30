@@ -48,7 +48,7 @@
 	 * 
 	 * @param workFeature {Object} animateFeature 옵션
 	 */
-	ol.layer.Vector.prototype.animateFeature = function(workFeature_) {
+	ol.layer.Vector.prototype.animateFeature = ( function(workFeature_) {
 		var _self = this;
 		var workFeature = workFeature_;
 
@@ -114,7 +114,7 @@
 		}
 
 		return listenerKey;
-	};
+	} );
 
 } )();
 
@@ -648,7 +648,7 @@
 				_self.captureUgBaseMap.changeBaseMap( bKey );
 			} else if ( baseMapKey.indexOf( "TMS" ) > -1 ) {
 				var code = baseMapKey.split( "_" )[ 0 ];
-				
+
 				var tms = new ugmp.baseMap.uGisBaseMapTMS_vWorld( {
 					baseCode : code,
 					projection : _self.origin_ugBaseMap.getApiMap().getView().getProjection().getCode()
@@ -746,6 +746,8 @@
 					addObject = _self._addUGisLayer().addWFSLayer;
 				} else if ( ugLayer.getLayerType() === "Vector" ) {
 					addObject = _self._addUGisLayer().addVectorLayer;
+				} else if ( ugLayer.getLayerType() === "Vector3D" ) {
+					addObject = _self._addUGisLayer().addVector3DLayer;
 				} else if ( ugLayer.getLayerType() === "Cluster" ) {
 					addObject = _self._addUGisLayer().addClusterLayer;
 				} else if ( ugLayer.getLayerType() === "WMTS" ) {
@@ -860,10 +862,10 @@
 					useProxy : true,
 					serviceURL : ugLayer_.getServiceURL(),
 					layerName : ugLayer_.layerName,
-					// srsName : ugLayer_.srsName,
 					srsName : _self.captureUgMap.getCRS(),
 					maxFeatures : ugLayer_._this.maxFeatures,
-					dataViewId : _self.captureUgMap.getDataViewId()
+					style : ugLayer_._this.style,
+					filter : ugLayer_._this.filter
 				} );
 			},
 			add : function(ugWfsLayer_) {
@@ -884,13 +886,39 @@
 
 				return new ugmp.layer.uGisVectorLayer( {
 					style : style,
-					features : ugLayer_.getOlLayer().getSource().getFeatures(),
+					features : ugLayer_.getFeatures(),
 					srsName : ugLayer_._this.srsName,
 				} );
 			},
 			add : function(ugVectorLayer_) {
 				return _self.captureUgMap.addVectorLayer( {
 					uVectorLayer : ugVectorLayer_,
+					useExtent : false
+				} );
+			}
+		};
+
+		var addVector3DLayer = {
+			create : function(ugLayer_) {
+				var style = ugLayer_._this.style;
+
+				if ( typeof style !== "function" && typeof style !== "undefined" ) {
+					style = ugmp.util.uGisUtil.cloneStyle( style );
+				}
+
+				return new ugmp.layer.uGisVector3DLayer( {
+					style : style,
+					features : ugLayer_.getFeatures(),
+					initBuild : ugLayer_._this.initBuild,
+					srsName : ugLayer_._this.srsName,
+					labelColumn : ugLayer_._this.labelColumn,
+					heightColumn : ugLayer_._this.heightColumn,
+					maxResolution : ugLayer_._this.maxResolution					
+				} );
+			},
+			add : function(ugVector3DLayer_) {
+				return _self.captureUgMap.addVector3DLayer( {
+					uVector3DLayer : ugVector3DLayer_,
 					useExtent : false
 				} );
 			}
@@ -962,7 +990,8 @@
 			addWMSLayer : addWMSLayer,
 			addWMTSLayer : addWMTSLayer,
 			addVectorLayer : addVectorLayer,
-			addClusterLayer : addClusterLayer
+			addClusterLayer : addClusterLayer,
+			addVector3DLayer : addVector3DLayer
 		}
 	};
 
@@ -1787,6 +1816,7 @@
 			addWMTSLayer : _self.addWMTSLayer,
 			addVectorLayer : _self.addVectorLayer,
 			addClusterLayer : _self.addClusterLayer,
+			addVector3DLayer : _self.addVector3DLayer,
 			calculateScale : _self.calculateScale,
 			getDataViewId : _self.getDataViewId,
 			getScaleForZoom : _self.getScaleForZoom,
@@ -2185,7 +2215,7 @@
 			_self.olMap.addLayer( olWFSLayer );
 			_self.layers.push( uWFSLayer );
 
-			var uFeatures = uWFSLayer.getFeatures( undefined, _self.dataViewId );
+			var uFeatures = uWFSLayer.getFeatures( _self.dataViewId );
 
 			uFeatures.then( function(result_) {
 
@@ -2498,6 +2528,52 @@
 
 				if ( extent && extent[ 0 ] !== Infinity ) {
 					var transExtent = ol.proj.transformExtent( olVectorLayer.getSource().getExtent(), uVectorLayer.srsName, _self.mapCRS );
+					_self.setExtent( transExtent );
+				}
+			}
+
+			deferred.resolve( true );
+		} catch ( e ) {
+			ugmp.uGisConfig.alert_Error( "Error : " + e );
+			deferred.reject( false );
+			return deferred.promise();
+		}
+
+		return deferred.promise();
+	};
+	
+	
+	/**
+	 * Vector3D 레이어를 추가한다.
+	 * 
+	 * @param opt_options {Object}
+	 * @param opt_options.uVector3DLayer {ugmp.layer.uGisVector3DLayer} {@link ugmp.layer.uGisVector3DLayer} 객체.
+	 * @param opt_options.useExtent {Boolean} 레이어 추가 후 extent 설정 사용 여부.
+	 * 
+	 * `true`면 해당 레이어의 영역으로 지도 영역을 맞춘다. Default is `false`.
+	 * 
+	 * @return promise {Object} jQuery.Deferred.promise.
+	 */
+	ugmp.uGisMap.prototype.addVector3DLayer = function(opt_options) {
+		var _self = this._this || this;
+
+		var options = opt_options || {};
+
+		var uVector3DLayer = ( options.uVector3DLayer !== undefined ) ? options.uVector3DLayer : undefined;
+		var useExtent = ( options.useExtent !== undefined ) ? options.useExtent : false;
+
+		var deferred = _$.Deferred();
+
+		try {
+			var olVectorLayer = uVector3DLayer.getOlLayer();
+			_self.olMap.addLayer( olVectorLayer );
+			_self.layers.push( uVector3DLayer );
+
+			if ( useExtent ) {
+				var extent = olVectorLayer.getSource().getExtent();
+
+				if ( extent && extent[ 0 ] !== Infinity ) {
+					var transExtent = ol.proj.transformExtent( olVectorLayer.getSource().getExtent(), uVector3DLayer.srsName, _self.mapCRS );
 					_self.setExtent( transExtent );
 				}
 			}
@@ -3369,6 +3445,541 @@
 
 } )();
 
+( function() {
+	"use strict";
+
+	/**
+	 * Vector 3D 렌더링 객체.
+	 * 
+	 * @constructor
+	 * 
+	 * @example
+	 * 
+	 * <pre>
+	 * var ugRender3D = new ugmp.etc.uGisRender3D( {
+	 * 	style : new ol.style.Style({...}),
+	 * 	layer : new ol.layer.Vector({...}),
+	 * 	initBuild : true,
+	 * 	labelColumn : 'BUILD_NAME',
+	 * 	heightColumn : 'BUILD_HEIGHT',
+	 * 	maxResolution : 0.5
+	 * } );
+	 * </pre>
+	 * 
+	 * @param opt_options {Object}
+	 * @param opt_options.style {ol.style.Style} 스타일.
+	 * @param opt_options.easing {ol.easing} ol.easing 타입.
+	 * @param opt_options.layer {ol.layer.Vector} 벡터레이어 객체.
+	 * @param opt_options.initBuild {Boolean} 초기 3D 렌더링 사용 여부.
+	 * @param opt_options.labelColumn {String} 피처에 표시할 라벨 컬럼명.
+	 * @param opt_options.heightColumn {String} 피처의 높이를 참조할 컬럼명.
+	 * @param opt_options.animateDuration {Number} 3D 렌더링 지연 시간. Default is `1000`.
+	 * @param opt_options.maxResolution {Number} 3D 렌더링 최대 Resolution. Default is `0.6`.
+	 * 
+	 * @class
+	 */
+	ugmp.etc.uGisRender3D = ( function(opt_options) {
+		var _self = this;
+		var _super = null;
+
+		this.style = null;
+		this.layer = null;
+		this.easing = null;
+		this.initBuild = null;
+		this.labelColumn = null;
+		this.defaultHeight = null;
+		this.heightColumn = null;
+		this.maxResolution = null;
+		this.animateDuration = null;
+
+		this.res = null;
+		this.center = null;
+		this.height = null;
+		this.matrix = null;
+		this.listener = null;
+		this.animate = null;
+		this.toHeight = null;
+		this.buildState = null;
+		this.elapsedRatio = null;
+
+
+		/**
+		 * Initialize
+		 */
+		( function() {
+
+			var options = opt_options || {};
+
+			_self.style = ( options.style !== undefined ) ? options.style : undefined;
+			_self.layer = ( options.layer !== undefined ) ? options.layer : undefined;
+			_self.easing = ( options.easing !== undefined ) ? options.easing : ol.easing.easeOut;
+			_self.initBuild = ( typeof ( options.initBuild ) === "boolean" ) ? options.initBuild : true;
+			_self.labelColumn = _self.labelColumn = ( options.labelColumn !== undefined ) ? options.labelColumn : "";
+			_self.heightColumn = _self.heightColumn = ( options.heightColumn !== undefined ) ? options.heightColumn : "";
+			_self.animateDuration = ( typeof ( options.animateDuration ) === "number" ) ? options.animateDuration : 1000;
+			_self.defaultHeight = options.defaultHeight = ( typeof ( options.defaultHeight ) === "number" ) ? options.defaultHeight : 0;
+			_self.maxResolution = options.maxResolution = ( typeof ( options.maxResolution ) === "number" ) ? options.maxResolution : 0.6;
+
+			_super = ol.Object.call( _self, options );
+
+			_self._init();
+
+		} )();
+		// END Initialize
+
+		
+		return ugmp.util.uGisUtil.objectMerge( _super, {
+			_this : _self,
+			isBuild3D : _self.isBuild3D,
+			setBuild3D : _self.setBuild3D,
+			buildToggle : _self.buildToggle
+		} );
+
+	} );
+
+
+	ugmp.etc.uGisRender3D.prototype = Object.create( ol.Object.prototype );
+	ugmp.etc.uGisRender3D.prototype.constructor = ugmp.etc.uGisRender3D;
+
+
+	/**
+	 * 초기화
+	 * 
+	 * @private
+	 */
+	ugmp.etc.uGisRender3D.prototype._init = ( function() {
+		var _self = this._this || this;
+
+		_self._setStyle( _self.style );
+		_self._setLayer( _self.layer );
+		_self.height = _self._getHfn( _self.heightColumn );
+	} );
+
+
+	/**
+	 * Set style associated with the renderer
+	 * 
+	 * @param {ol.style.Style} s
+	 * 
+	 * @private
+	 */
+	ugmp.etc.uGisRender3D.prototype._setStyle = ( function(style_) {
+		var _self = this._this || this;
+
+		if ( style_ instanceof ol.style.Style ) {
+			_self._style = style_;
+		} else {
+			_self._style = new ol.style.Style();
+		}
+
+		if ( !_self._style.getStroke() ) {
+			_self._style.setStroke( new ol.style.Stroke( {
+				width : 1,
+				color : "RED"
+			} ) );
+		}
+
+		if ( !_self._style.getFill() ) {
+			_self._style.setFill( new ol.style.Fill( {
+				color : "rgba(0,0,255,0.5)"
+			} ) );
+		}
+
+		// Get the geometry
+		if ( style_ && style_.getGeometry() ) {
+			var geom = style_.getGeometry();
+			if ( typeof ( geom ) === "function" ) {
+				_self.set( "geometry", geom );
+			} else {
+				_self.set( "geometry", function() {
+					return geom;
+				} );
+			}
+		} else {
+			_self.set( "geometry", function(f_) {
+				return f_.getGeometry();
+			} );
+		}
+	} );
+
+
+	/**
+	 * Set layer to render 3D
+	 * 
+	 * @private
+	 */
+	ugmp.etc.uGisRender3D.prototype._setLayer = ( function(layer_) {
+		var _self = this._this || this;
+
+		_self._layer = layer_;
+
+		if ( _self.listener_ ) {
+			_self.listener_.forEach( function(lKey_) {
+				ol.Observable.unByKey( lKey_ );
+			} );
+		}
+
+		_self.listener_ = layer_.on( [ "postcompose", "postrender" ], _self._onPostcompose.bind( _self ) );
+		
+		_self.setBuild3D( _self.initBuild );
+	} );
+
+
+	/**
+	 * Calculate 3D at potcompose
+	 * 
+	 * @private
+	 */
+	ugmp.etc.uGisRender3D.prototype._onPostcompose = ( function(e_) {
+		var _self = this._this || this;
+
+		var res = e_.frameState.viewState.resolution;
+		if ( res > _self.get( "maxResolution" ) ) return;
+
+		var asd = ugMap.getMap().getRenderer().getLayerRenderer( _self.layer );
+
+
+		asd.declutterTree_.clear();
+
+		_self.res = res * 400;
+
+		if ( _self.animate ) {
+			var elapsed = e_.frameState.time - _self.animate;
+
+			if ( elapsed < _self.animateDuration ) {
+				_self.elapsedRatio = _self.easing( elapsed / _self.animateDuration );
+				// tell OL3 to continue postcompose animation
+				e_.frameState.animate = true;
+			} else {
+				_self.animate = false;
+				_self.height = _self.toHeight;
+			}
+		}
+
+		var ratio = e_.frameState.pixelRatio;
+		var ctx = e_.context;
+		var m = _self.matrix = e_.frameState.coordinateToPixelTransform;
+		// Old version (matrix)
+		if ( !m ) {
+			m = e_.frameState.coordinateToPixelMatrix, m[ 2 ] = m[ 4 ];
+			m[ 3 ] = m[ 5 ];
+			m[ 4 ] = m[ 12 ];
+			m[ 5 ] = m[ 13 ];
+		}
+
+
+		_self.center = [ ctx.canvas.width/2/ratio, ctx.canvas.height/ratio ];
+
+
+		var f = _self.layer.getSource().getFeaturesInExtent( e_.frameState.extent );
+		ctx.save();
+		ctx.scale( ratio, ratio );
+
+		var s = _self.style;
+		ctx.lineWidth = s.getStroke().getWidth();
+		ctx.fillStyle = ol.color.asString( s.getFill().getColor() );
+		ctx.strokeStyle = ol.color.asString( s.getStroke().getColor() );
+
+		var builds = [];
+		for ( var i = 0; i < f.length; i++ ) {
+			builds.push( _self._getFeature3D( f[ i ], _self._getFeatureHeight( f[ i ] ) ) );
+		}
+
+		_self._drawFeature3D( ctx, builds );
+		ctx.restore();
+	} );
+
+
+	/**
+	 * @private
+	 */
+	ugmp.etc.uGisRender3D.prototype._getFeature3D = ( function(f_, h_) {
+		var _self = this._this || this;
+
+		var geom = _self.get( "geometry" )( f_ );
+		var c = geom.getCoordinates();
+
+		switch ( geom.getType() ) {
+			case "Polygon" :
+				c = [ c ];
+				// fallthrough
+
+			case "MultiPolygon" :
+				var build = [];
+				for ( var i = 0; i < c.length; i++ ) {
+					for ( var j = 0; j < c[ i ].length; j++ ) {
+						var b = [];
+						for ( var k = 0; k < c[ i ][ j ].length; k++ ) {
+							b.push( _self._hvector( c[ i ][ j ][ k ], h_ ) );
+						}
+						build.push( b );
+					}
+				}
+
+				return {
+					type : "MultiPolygon",
+					feature : f_,
+					geom : build
+				};
+
+			case "Point" :
+				return {
+					type : "Point",
+					feature : f_,
+					geom : _self._hvector( c, h )
+				};
+
+			default :
+				return {};
+		}
+	} );
+
+
+	/**
+	 * Create a function that return height of a feature
+	 * 
+	 * @param {function|string|number} h a height function or a popertie name or a fixed value
+	 * 
+	 * @private
+	 * 
+	 * @return {function} function(f) return height of the feature f
+	 */
+	ugmp.etc.uGisRender3D.prototype._getHfn = ( function(h_) {
+		var _self = this._this || this;
+
+		switch ( typeof ( h_ ) ) {
+			case 'function' :
+				return h_;
+
+			case 'string' : {
+				var dh = _self.get( "defaultHeight" );
+				return ( function(f_) {
+					return ( Number( f_.get( h_ ) ) || dh );
+				} );
+			}
+
+			case 'number' :
+				return ( function(/* f */) {
+					return h_;
+				} );
+
+			default :
+				return ( function(/* f */) {
+					return 10;
+				} );
+		}
+	} );
+
+
+	/**
+	 * @private
+	 */
+	ugmp.etc.uGisRender3D.prototype._hvector = ( function(pt_, h_) {
+		var _self = this._this || this;
+
+		var p0 = [ pt_[ 0 ] * _self.matrix[ 0 ] + pt_[ 1 ] * _self.matrix[ 1 ] + _self.matrix[ 4 ],
+			pt_[ 0 ] * _self.matrix[ 2 ] + pt_[ 1 ] * _self.matrix[ 3 ] + _self.matrix[ 5 ] ];
+	
+		return {
+			p0 : p0,
+			p1 : [ p0[ 0 ] + h_ / _self.res * ( p0[ 0 ] - _self.center[ 0 ] ), p0[ 1 ] + h_ / _self.res * ( p0[ 1 ] - _self.center[ 1 ] ) ]
+		};
+	} );
+
+
+	/**
+	 * @private
+	 */
+	ugmp.etc.uGisRender3D.prototype._getFeatureHeight = ( function(f_) {
+		var _self = this._this || this;
+
+		if ( _self.animate ) {
+			var h1 = _self.height( f_ );
+			var h2 = _self.toHeight( f_ );
+
+			return ( h1 * ( 1 - _self.elapsedRatio ) + _self.elapsedRatio * h2 );
+		} else {
+			return _self.height( f_ );
+		}
+	} );
+
+
+	/**
+	 * @private
+	 */
+	ugmp.etc.uGisRender3D.prototype._drawFeature3D = ( function(ctx_, build_) {
+		var _self = this._this || this;
+
+		var i, j, b, k;
+		// Construct
+		for ( i = 0; i < build_.length; i++ ) {
+			switch ( build_[ i ].type ) {
+				case "MultiPolygon" : {
+					for ( j = 0; j < build_[ i ].geom.length; j++ ) {
+						b = build_[ i ].geom[ j ];
+						for ( k = 0; k < b.length; k++ ) {
+							ctx_.beginPath();
+							ctx_.moveTo( b[ k ].p0[ 0 ], b[ k ].p0[ 1 ] );
+							ctx_.lineTo( b[ k ].p1[ 0 ], b[ k ].p1[ 1 ] );
+							ctx_.stroke();
+						}
+					}
+					break;
+				}
+
+				case "Point" : {
+					var g = build_[ i ].geom;
+					ctx_.beginPath();
+					ctx_.moveTo( g.p0[ 0 ], g.p0[ 1 ] );
+					ctx_.lineTo( g.p1[ 0 ], g.p1[ 1 ] );
+					ctx_.stroke();
+					break;
+				}
+				default :
+					break;
+			}
+		}
+
+		// Roof
+		for ( i = 0; i < build_.length; i++ ) {
+			switch ( build_[ i ].type ) {
+				case "MultiPolygon" : {
+					ctx_.beginPath();
+					for ( j = 0; j < build_[ i ].geom.length; j++ ) {
+						b = build_[ i ].geom[ j ];
+						if ( j == 0 ) {
+							ctx_.moveTo( b[ 0 ].p1[ 0 ], b[ 0 ].p1[ 1 ] );
+							for ( k = 1; k < b.length; k++ ) {
+								ctx_.lineTo( b[ k ].p1[ 0 ], b[ k ].p1[ 1 ] );
+							}
+						} else {
+							ctx_.moveTo( b[ 0 ].p1[ 0 ], b[ 0 ].p1[ 1 ] );
+							for ( k = b.length - 2; k >= 0; k-- ) {
+								ctx_.lineTo( b[ k ].p1[ 0 ], b[ k ].p1[ 1 ] );
+							}
+						}
+						ctx_.closePath();
+					}
+					ctx_.fill( "evenodd" );
+					ctx_.stroke();
+
+
+					b = build_[ i ];
+					var text = b.feature.get( _self.labelColumn );
+
+					if ( text ) {
+						var center = ugmp.util.uGisGeoSpatialUtil.getGeomCenter( b.feature.getGeometry() );
+						var p = _self._hvector( center, _self._getFeatureHeight( b.feature ) ).p1;
+
+						var f = ctx_.fillStyle;
+
+						var m = ctx_.measureText( text );
+						var h = Number( ctx_.font.match( /\d+(\.\d+)?/g ).join( [] ) );
+						ctx_.fillStyle = "rgba(255,255,255,0.5)";
+						ctx_.fillRect( p[ 0 ] - m.width / 2 - 5, p[ 1 ] - h - 5, m.width + 10, h + 10 )
+						ctx_.strokeRect( p[ 0 ] - m.width / 2 - 5, p[ 1 ] - h - 5, m.width + 10, h + 10 )
+
+						ctx_.font = "bold 12px Verdana";
+						ctx_.fillStyle = 'black';
+						ctx_.textAlign = 'center';
+						ctx_.textBaseline = 'bottom';
+						ctx_.fillText( text, p[ 0 ], p[ 1 ] );
+
+						ctx_.fillStyle = f;
+					}
+
+					break;
+				}
+
+				case "Point" : {
+					b = build_[ i ];
+					var text = b.feature.get( _self.labelColumn );
+
+					if ( text ) {
+						var p = b.geom.p1;
+						var f = ctx_.fillStyle;
+						ctx_.fillStyle = ctx_.strokeStyle;
+						ctx_.textAlign = 'center';
+						ctx_.textBaseline = 'bottom';
+						ctx_.fillText( text, p[ 0 ], p[ 1 ] );
+						var m = ctx_.measureText( text );
+						var h = Number( ctx_.font.match( /\d+(\.\d+)?/g ).join( [] ) );
+						ctx_.fillStyle = "rgba(255,255,255,0.5)";
+						ctx_.fillRect( p[ 0 ] - m.width / 2 - 5, p[ 1 ] - h - 5, m.width + 10, h + 10 )
+						ctx_.strokeRect( p[ 0 ] - m.width / 2 - 5, p[ 1 ] - h - 5, m.width + 10, h + 10 )
+						ctx_.fillStyle = f;
+					}
+
+					break;
+				}
+				default :
+					break;
+			}
+		}
+	} );
+
+
+	/**
+	 * Check if animation is on
+	 * 
+	 * @private
+	 * 
+	 * @return {Boolean} 현재 animation 상태.
+	 */
+	ugmp.etc.uGisRender3D.prototype._animating = ( function() {
+		var _self = this._this || this;
+
+		if ( _self.animate && new Date().getTime() - _self.animate > _self.animateDuration ) {
+			_self.animate = false;
+		}
+
+		return !!_self.animate;
+	} );
+
+
+	/**
+	 * 3D 렌더링 ON/OFF 설정을 한다.
+	 * 
+	 * @param state {Boolean} 사용 설정 값.
+	 */
+	ugmp.etc.uGisRender3D.prototype.setBuild3D = ( function(state_) {
+		var _self = this._this || this;
+
+		if ( state_ ) {
+			_self.buildState = true;
+			_self.toHeight = _self._getHfn( _self.heightColumn );
+		} else {
+			_self.buildState = false;
+			_self.toHeight = _self._getHfn( 0 );
+		}
+
+		_self.animate = new Date().getTime();
+
+		// Force redraw
+		_self.layer.changed();
+	} );
+	
+	
+	/**
+	 * 3D 렌더링 ON/OFF 상태를 토글한다.
+	 */
+	ugmp.etc.uGisRender3D.prototype.buildToggle = ( function() {
+		var _self = this._this || this;
+		_self.setBuild3D( !_self.buildState );
+	} );
+	
+	
+	/**
+	 * 3D 렌더링 ON/OFF 상태를 가져온다.
+	 * 
+	 * @return {Boolean} 현재 렌더링 ON/OFF 상태.
+	 */
+	ugmp.etc.uGisRender3D.prototype.isBuild3D = ( function() {
+		var _self = this._this || this;
+		_self.setBuild3D( !_self.buildState );
+	} );
+
+} )();
 ( function() {
 	"use strict";
 
@@ -6004,6 +6615,172 @@
 	"use strict";
 
 	/**
+	 * Vector3D 레이어 객체.
+	 * 
+	 * 벡터데이터를 3D로 표현할 수 있는 레이어 객체.
+	 * 
+	 * ※도형의 Z값으로 렌더링하는 것은 아니며, 해당 피처의 높이 값 컬럼 설정을 통해 건물의 대략적인 높이만 표현할 수 있다.
+	 * 
+	 * @example
+	 * 
+	 * <pre>
+	 * var ugVector3DLayer = new ugmp.layer.uGisVector3DLayer( {
+	 * 	srsName :'EPSG:3857',
+	 * 	features : [ new ol.Feature( {
+	 * 	 	geometry : new ol.geom.Polygon({...})
+	 * 	} ) ],
+	 * 	style : new ol.style.Style({...})
+	 * } );
+	 * </pre>
+	 * 
+	 * @constructor
+	 * 
+	 * @param opt_options {Object}
+	 * @param opt_options.srsName {String} 좌표계. Default is `EPSG:3857`.
+	 * @param opt_options.features {Array<ol.Feature>|ol.Collection} 피처.
+	 * @param opt_options.style {ol.style.Style} 스타일.
+	 * 
+	 * @param opt_options.initBuild {Boolean} 초기 3D 렌더링 사용 여부.
+	 * @param opt_options.labelColumn {String} 피처에 표시할 라벨 컬럼명.
+	 * @param opt_options.heightColumn {String} 피처의 높이를 참조할 컬럼명.
+	 * @param opt_options.maxResolution {Number} 3D 렌더링 최대 Resolution. Default is `0.6`.
+	 * 
+	 * @Extends {ugmp.layer.uGisLayerDefault}
+	 * 
+	 * @class
+	 */
+	ugmp.layer.uGisVector3DLayer = ( function(opt_options) {
+		var _self = this;
+		var _super = null;
+
+		this.style = null;
+		this.initBuild = null;
+		this.features = null;
+		this.srsName = null;
+		this.labelColumn = null;
+		this.heightColumn = null;
+		this.maxResolution = null;
+
+		this.ugRender3D = null;
+
+
+		/**
+		 * Initialize
+		 */
+		( function() {
+
+			var options = opt_options || {};
+
+			options.layerType = "Vector3D";
+			options.useGetFeature = true;
+
+			_super = ugmp.layer.uGisLayerDefault.call( _self, options );
+
+			_self.style = ( options.style !== undefined ) ? options.style : undefined;
+			_self.features = ( options.features !== undefined ) ? options.features : [];
+			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
+			_self.labelColumn = ( options.labelColumn !== undefined ) ? options.labelColumn : "";
+			_self.initBuild = ( typeof ( options.initBuild ) === "boolean" ) ? options.initBuild : true;
+			_self.heightColumn = ( options.heightColumn !== undefined ) ? options.heightColumn : "";
+			_self.maxResolution = ( typeof ( options.maxResolution ) === "number" ) ? options.maxResolution : 0.6;
+
+			_self._init();
+
+		} )();
+		// END Initialize
+
+
+		return ugmp.util.uGisUtil.objectMerge( _super, {
+			_this : _self,
+			clear : _self.clear,
+			srsName : _self.srsName,
+			getFeatures : _self.getFeatures,
+			addFeatures : _self.addFeatures,
+			getRender3D : _self.getRender3D
+		} );
+
+	} );
+
+
+	ugmp.layer.uGisVector3DLayer.prototype = Object.create( ugmp.layer.uGisLayerDefault.prototype );
+	ugmp.layer.uGisVector3DLayer.prototype.constructor = ugmp.layer.uGisVector3DLayer;
+
+
+	/**
+	 * 초기화
+	 * 
+	 * @private
+	 */
+	ugmp.layer.uGisVector3DLayer.prototype._init = ( function() {
+		var _self = this._this || this;
+
+		_self.olLayer = new ol.layer.Vector( {
+			// zIndex : 8999,
+			declutter : true,
+			// style : _self.style,
+			source : new ol.source.Vector( {
+				features : _self.features
+			} )
+		} );
+
+		_self.ugRender3D = new ugmp.etc.uGisRender3D( {
+			style : _self.style,
+			layer : _self.olLayer,
+			initBuild : _self.initBuild,
+			labelColumn : _self.labelColumn,
+			heightColumn : _self.heightColumn,
+			maxResolution : _self.maxResolution
+		} );
+	} );
+
+
+	/**
+	 * uGisRender3D 객체를 가져온다.
+	 * 
+	 * @return ugRender3D {@link ugmp.etc.uGisRender3D} 객체.
+	 */
+	ugmp.layer.uGisVector3DLayer.prototype.getRender3D = ( function() {
+		var _self = this._this || this;
+		return _self.ugRender3D;
+	} );
+
+
+	/**
+	 * 레이어에 Feature를 추가한다.
+	 * 
+	 * @param features {Array.<ol.Feature>} 추가할 피처 리스트.
+	 */
+	ugmp.layer.uGisVector3DLayer.prototype.addFeatures = ( function(features_) {
+		var _self = this._this || this;
+		_self.olLayer.getSource().addFeatures( features_ );
+	} );
+
+
+	/**
+	 * 레이어의 Feature 리스트를 가져온다.
+	 * 
+	 * @return features {Array.<ol.Feature>} 피처 리스트.
+	 */
+	ugmp.layer.uGisVector3DLayer.prototype.getFeatures = ( function() {
+		var _self = this._this || this;
+		return _self.olLayer.getSource().getFeatures();
+	} );
+
+
+	/**
+	 * 레이어의 Feature를 지운다.
+	 */
+	ugmp.layer.uGisVector3DLayer.prototype.clear = ( function() {
+		var _self = this._this || this;
+		_self.olLayer.getSource().clear();
+	} );
+
+} )();
+
+( function() {
+	"use strict";
+
+	/**
 	 * Vector 레이어 객체.
 	 * 
 	 * 벡터데이터를 표현할 수 있는 레이어 객체.
@@ -6060,6 +6837,7 @@
 
 			_self.olLayer = new ol.layer.Vector( {
 				// zIndex : 8999,
+				declutter : true,
 				style : _self.style,
 				source : new ol.source.Vector( {
 					features : _self.features
@@ -6405,12 +7183,13 @@
 	 * 
 	 * <pre>
 	 * var ugWfsLayer = new ugmp.layer.uGisWFSLayer( {
-	 *	useProxy : true,
+	 * 	useProxy : true,
 	 * 	serviceURL : 'http://mapstudio.uitgis.com/ms/wfs?KEY=key',
 	 * 	layerName : 'world_country',
 	 * 	srsName : 'EPSG:3857',
 	 * 	maxFeatures : 300,
-	 * 	dataViewId : ugMap.getDataViewId()
+	 * 	style : new ol.style.Style({...}),
+	 * 	filter : new ol.format.filter.like( 'NAME', 'South*' )
 	 * } );
 	 * </pre>
 	 * 
@@ -6422,8 +7201,9 @@
 	 * 
 	 * @param opt_options.layerName {String} 레이어명.
 	 * @param opt_options.srsName {String} 좌표계. Default is `EPSG:3857`.
+	 * @param opt_options.filter {ol.format.filter.Filter} 필터. Default is `undefined`.
 	 * @param opt_options.maxFeatures {Number} 피처 최대 요청 갯수. Default is `1000`.
-	 * @param opt_options.dataViewId {String} View ID.
+	 * @param opt_options.style {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction} 스타일.
 	 * 
 	 * @Extends {ugmp.layer.uGisLayerDefault}
 	 * 
@@ -6433,10 +7213,11 @@
 		var _self = this;
 		var _super = null;
 
+		this.filter = null;
+		this.style = null;
 		this.srsName = null;
 		this.layerName = null;
 		this.maxFeatures = null;
-		this.dataViewId = null;
 
 
 		/**
@@ -6451,11 +7232,15 @@
 
 			_super = ugmp.layer.uGisLayerDefault.call( _self, options );
 
+			_self.filter = ( options.filter !== undefined ) ? options.filter : undefined;
+			_self.style = ( options.style !== undefined ) ? options.style : undefined;
 			_self.layerName = ( options.layerName !== undefined ) ? options.layerName : "";
 			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
 			_self.maxFeatures = ( options.maxFeatures !== undefined ) ? options.maxFeatures : 1000;
 
 			_self.olLayer = new ol.layer.Vector( {
+				declutter : true,
+				style : _self.style,
 				source : new ol.source.Vector()
 			} );
 
@@ -6484,7 +7269,7 @@
 	 * 
 	 * @return uFeatures {@link ugmp.service.uGisGetFeature} ugmp.service.uGisGetFeature.
 	 */
-	ugmp.layer.uGisWFSLayer.prototype.getFeatures = function(filter_, dataViewId_) {
+	ugmp.layer.uGisWFSLayer.prototype.getFeatures = function(dataViewId_) {
 		var _self = this._this || this;
 
 		var uFeatures = new ugmp.service.uGisGetFeature( {
@@ -6494,7 +7279,7 @@
 			typeName : _self.layerName,
 			maxFeatures : _self.maxFeatures,
 			outputFormat : "application/json",
-			filter : ( filter_ !== undefined ) ? filter_ : undefined,
+			filter : _self.filter,
 			dataViewId : dataViewId_,
 		} );
 
@@ -8034,46 +8819,19 @@
 		var view = _self.uGisMap.getMap().getView();
 
 		_self.uGisMap.getMap().on( "change:view", function(evt1_) {
-			ol.Observable.unByKey( _self.key_zoomEnd );
 			ol.Observable.unByKey( _self.key_changeResolution );
 
-			detectZoomChange_temp( evt1_.target.getView() );
+			detectZoomChange( evt1_.target.getView() );
 		} );
 
-		
-		detectZoomChange_temp( view );
-		
 
-		function detectZoomChange_temp(view_) {
+		detectZoomChange( view );
+
+
+		function detectZoomChange(view_) {
 			_self.key_changeResolution = view_.on( "change:resolution", function() {
 				_changeResolution();
 			} );
-		}
-
-		function detectZoomChange(view_) {
-			var targetView = view_;
-
-			var zoomEnd = function(evt2_) {
-				var v = evt2_.map.getView();
-				var newZoomLevel = v.getZoom();
-
-				if ( currentZoomLevel != newZoomLevel ) {
-					currentZoomLevel = newZoomLevel;
-					_changeResolution();
-				}
-
-				_self.key_zoomEnd = _self.uGisMap.getMap().once( "moveend", function(evt3_) {
-					zoomEnd( evt3_ );
-				} );
-			};
-
-
-			_self.key_changeResolution = targetView.once( "change:resolution", function(evt4_) {
-				_self.uGisMap.getMap().once( "moveend", function(evt5_) {
-					zoomEnd( evt5_ );
-				} );
-			} );
-
 		}
 
 
@@ -8182,7 +8940,7 @@
 
 		olLayer.getSource().getParams().LAYERS = _self.setZtreeLayerData();
 		if ( cacheClear_ ) {
-			olLayer.getSource().getParams().refTime = new Date().getMilliseconds();			
+			olLayer.getSource().getParams().refTime = new Date().getMilliseconds();
 		}
 		olLayer.getSource().updateParams( olLayer.getSource().getParams() );
 
@@ -9065,46 +9823,19 @@
 		var view = _self.uGisMap.getMap().getView();
 
 		_self.uGisMap.getMap().on( "change:view", function(evt1_) {
-			ol.Observable.unByKey( _self.key_zoomEnd );
 			ol.Observable.unByKey( _self.key_changeResolution );
 
-			detectZoomChange_temp( evt1_.target.getView() );
+			detectZoomChange( evt1_.target.getView() );
 		} );
 
 
-		detectZoomChange_temp( view );
+		detectZoomChange( view );
 
 
-		function detectZoomChange_temp(view_) {
+		function detectZoomChange(view_) {
 			_self.key_changeResolution = view_.on( "change:resolution", function() {
 				_changeResolution();
 			} );
-		}
-
-		function detectZoomChange(view_) {
-			var targetView = view_;
-
-			var zoomEnd = function(evt2_) {
-				var v = evt2_.map.getView();
-				var newZoomLevel = v.getZoom();
-
-				if ( currentZoomLevel != newZoomLevel ) {
-					currentZoomLevel = newZoomLevel;
-					_changeResolution();
-				}
-
-				_self.key_zoomEnd = _self.uGisMap.getMap().once( "moveend", function(evt3_) {
-					zoomEnd( evt3_ );
-				} );
-			};
-
-
-			_self.key_changeResolution = targetView.once( "change:resolution", function(evt4_) {
-				_self.uGisMap.getMap().once( "moveend", function(evt5_) {
-					zoomEnd( evt5_ );
-				} );
-			} );
-
 		}
 
 
@@ -11092,17 +11823,17 @@
 			options.maxExtent = ol.proj.get( "EPSG:5181" ).getExtent();
 			options.mapTypes = {
 				normal : {
-					id : daum.maps.MapTypeId[ "NORMAL" ], // 1
+					id : 1, // daum.maps.MapTypeId[ "NORMAL" ]
 					minZoom : 1,
 					maxZoom : 14
 				},
 				satellite : {
-					id : daum.maps.MapTypeId[ "SKYVIEW" ], // 2
+					id : 2, // daum.maps.MapTypeId[ "SKYVIEW" ]
 					minZoom : 1,
 					maxZoom : 15
 				},
 				hybrid : {
-					id : daum.maps.MapTypeId[ "HYBRID" ], // 3
+					id : 3, // daum.maps.MapTypeId[ "HYBRID" ]
 					minZoom : 1,
 					maxZoom : 15
 				}
@@ -11281,22 +12012,22 @@
 			options.maxExtent = ol.proj.get( "EPSG:900913" ).getExtent();
 			options.mapTypes = {
 				normal : {
-					id : google.maps.MapTypeId.ROADMAP, // roadmap
+					id : "roadmap", // google.maps.MapTypeId.ROADMAP
 					minZoom : 0,
 					maxZoom : 21
 				},
 				satellite : {
-					id : google.maps.MapTypeId.SATELLITE, // satellite
+					id : "satellite", // google.maps.MapTypeId.SATELLITE
 					minZoom : 0,
 					maxZoom : 19
 				},
 				hybrid : {
-					id : google.maps.MapTypeId.HYBRID, // hybrid
+					id : "hybrid", // google.maps.MapTypeId.HYBRID
 					minZoom : 0,
 					maxZoom : 19
 				},
 				terrain : {
-					id : google.maps.MapTypeId.TERRAIN, // terrain
+					id : "terrain", // google.maps.MapTypeId.TERRAIN
 					minZoom : 0,
 					maxZoom : 19
 				}
@@ -11479,17 +12210,17 @@
 			options.maxExtent = ol.proj.get( "EPSG:5181" ).getExtent();
 			options.mapTypes = {
 				normal : {
-					id : naver.maps.MapTypeId[ "NORMAL" ], // normal
+					id : "normal", // naver.maps.MapTypeId[ "NORMAL" ]
 					minZoom : 1,
 					maxZoom : 14
 				},
 				satellite : {
-					id : naver.maps.MapTypeId[ "SATELLITE" ], // satellite
+					id : "satellite", // naver.maps.MapTypeId[ "SATELLITE" ] 
 					minZoom : 1,
 					maxZoom : 14
 				},
 				hybrid : {
-					id : naver.maps.MapTypeId[ "HYBRID" ], // hybrid
+					id : "hybrid", // naver.maps.MapTypeId[ "HYBRID" ]
 					minZoom : 1,
 					maxZoom : 14
 				}
@@ -12142,7 +12873,7 @@
 						return [ base ];
 					},
 					minZoom : 0,
-					maxZoom : 13
+					maxZoom : 20 // 13
 				},
 				satellite : {
 					id : "SATELLITE",
@@ -12155,7 +12886,7 @@
 						return [ satellite ];
 					},
 					minZoom : 0,
-					maxZoom : 13
+					maxZoom : 20 // 13
 				},
 				hybrid : {
 					id : "VHYBRID",
@@ -12173,7 +12904,7 @@
 						return [ satellite, hybrid ];
 					},
 					minZoom : 0,
-					maxZoom : 13
+					maxZoom : 20 // 13
 				},
 				gray : {
 					id : "VGRAY",
@@ -12186,7 +12917,7 @@
 						return [ gray ];
 					},
 					minZoom : 0,
-					maxZoom : 12
+					maxZoom : 20 // 12
 				},
 				midnight : {
 					id : "VMIDNIGHT",
@@ -12199,7 +12930,7 @@
 						return [ midnight ];
 					},
 					minZoom : 0,
-					maxZoom : 12
+					maxZoom : 20 // 12
 				}
 			};
 
@@ -16834,6 +17565,7 @@
 		this.useMinMaxZoom = null;
 
 		this.uGisLayerNTocObjects = null;
+		this.key_changeResolution = null;
 
 
 		/**
@@ -16886,40 +17618,16 @@
 		var tempZoomEnd = null;
 
 		_self.uGisMap.getMap().on( "change:view", function(evt1_) {
-			ol.Observable.unByKey( tempZoomEnd );
-			detectZoomChange( evt1_.target.getView() );
+			ol.Observable.unByKey( _self.key_changeResolution );
+
+			_self.key_changeResolution = evt1_.target.getView().on( "change:resolution", function(evt_) {
+				_self._scaleVisibleRefresh();
+			} );
 		} );
 
-
-		detectZoomChange( _self.uGisMap.getMap().getView() );
-
-
-		function detectZoomChange(view_) {
-			var targetView = view_;
-
-			var zoomEnd = function(evt2_) {
-				var v = evt2_.map.getView();
-				var newZoomLevel = v.getZoom();
-
-				if ( currentZoomLevel != newZoomLevel ) {
-					currentZoomLevel = newZoomLevel;
-
-					_self._scaleVisibleRefresh();
-				}
-
-				tempZoomEnd = _self.uGisMap.getMap().once( "moveend", function(evt3_) {
-					zoomEnd( evt3_ );
-				} );
-			};
-
-
-			targetView.once( "change:resolution", function(evt4_) {
-				_self.uGisMap.getMap().once( "moveend", function(evt5_) {
-					zoomEnd( evt5_ );
-				} );
-			} );
-
-		}
+		_self.key_changeResolution = _self.uGisMap.getMap().getView().on( "change:resolution", function(evt_) {
+			_self._scaleVisibleRefresh();
+		} );
 	};
 
 

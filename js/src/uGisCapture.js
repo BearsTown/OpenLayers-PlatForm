@@ -238,7 +238,7 @@
 				_self.captureUgBaseMap.changeBaseMap( bKey );
 			} else if ( baseMapKey.indexOf( "TMS" ) > -1 ) {
 				var code = baseMapKey.split( "_" )[ 0 ];
-				
+
 				var tms = new ugmp.baseMap.uGisBaseMapTMS_vWorld( {
 					baseCode : code,
 					projection : _self.origin_ugBaseMap.getApiMap().getView().getProjection().getCode()
@@ -336,6 +336,8 @@
 					addObject = _self._addUGisLayer().addWFSLayer;
 				} else if ( ugLayer.getLayerType() === "Vector" ) {
 					addObject = _self._addUGisLayer().addVectorLayer;
+				} else if ( ugLayer.getLayerType() === "Vector3D" ) {
+					addObject = _self._addUGisLayer().addVector3DLayer;
 				} else if ( ugLayer.getLayerType() === "Cluster" ) {
 					addObject = _self._addUGisLayer().addClusterLayer;
 				} else if ( ugLayer.getLayerType() === "WMTS" ) {
@@ -450,10 +452,10 @@
 					useProxy : true,
 					serviceURL : ugLayer_.getServiceURL(),
 					layerName : ugLayer_.layerName,
-					// srsName : ugLayer_.srsName,
 					srsName : _self.captureUgMap.getCRS(),
 					maxFeatures : ugLayer_._this.maxFeatures,
-					dataViewId : _self.captureUgMap.getDataViewId()
+					style : ugLayer_._this.style,
+					filter : ugLayer_._this.filter
 				} );
 			},
 			add : function(ugWfsLayer_) {
@@ -474,13 +476,39 @@
 
 				return new ugmp.layer.uGisVectorLayer( {
 					style : style,
-					features : ugLayer_.getOlLayer().getSource().getFeatures(),
+					features : ugLayer_.getFeatures(),
 					srsName : ugLayer_._this.srsName,
 				} );
 			},
 			add : function(ugVectorLayer_) {
 				return _self.captureUgMap.addVectorLayer( {
 					uVectorLayer : ugVectorLayer_,
+					useExtent : false
+				} );
+			}
+		};
+
+		var addVector3DLayer = {
+			create : function(ugLayer_) {
+				var style = ugLayer_._this.style;
+
+				if ( typeof style !== "function" && typeof style !== "undefined" ) {
+					style = ugmp.util.uGisUtil.cloneStyle( style );
+				}
+
+				return new ugmp.layer.uGisVector3DLayer( {
+					style : style,
+					features : ugLayer_.getFeatures(),
+					initBuild : ugLayer_._this.initBuild,
+					srsName : ugLayer_._this.srsName,
+					labelColumn : ugLayer_._this.labelColumn,
+					heightColumn : ugLayer_._this.heightColumn,
+					maxResolution : ugLayer_._this.maxResolution					
+				} );
+			},
+			add : function(ugVector3DLayer_) {
+				return _self.captureUgMap.addVector3DLayer( {
+					uVector3DLayer : ugVector3DLayer_,
 					useExtent : false
 				} );
 			}
@@ -552,7 +580,8 @@
 			addWMSLayer : addWMSLayer,
 			addWMTSLayer : addWMTSLayer,
 			addVectorLayer : addVectorLayer,
-			addClusterLayer : addClusterLayer
+			addClusterLayer : addClusterLayer,
+			addVector3DLayer : addVector3DLayer
 		}
 	};
 

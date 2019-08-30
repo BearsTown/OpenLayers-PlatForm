@@ -6,7 +6,7 @@
 	 * 
 	 * @param workFeature {Object} animateFeature 옵션
 	 */
-	ol.layer.Vector.prototype.animateFeature = function(workFeature_) {
+	ol.layer.Vector.prototype.animateFeature = ( function(workFeature_) {
 		var _self = this;
 		var workFeature = workFeature_;
 
@@ -72,6 +72,6 @@
 		}
 
 		return listenerKey;
-	};
+	} );
 
 } )();
