@@ -211,6 +211,11 @@
 				name : 'uGisAreaMeasure',
 				link_api : root + '/apidoc/ugmp.control.uGisAreaMeasure.html',
 				object : 'ugmp.control.uGisAreaMeasure'
+			},
+			MEASURE_CIRCLE : {
+				name : 'uGisCircleMeasure',
+				link_api : root + '/apidoc/ugmp.control.uGisCircleMeasure.html',
+				object : 'ugmp.control.uGisCircleMeasure'
 			}
 		},
 
@@ -627,6 +632,15 @@
 				link_view : root + '/examples/control/uGisAreaMeasure_view.html',
 				img : imagesPath + 'control/uGisAreaMeasure.gif',
 				requires : [ PO.MAP, PO.CONTROL.AREA ]
+			},
+			MEASURE_CIRCLE : {
+				name : 'MEASURE_CIRCLE',
+				title : 'uGisCircleMeasure - 원 면적 측정',
+				desc : '원의 면적을 측정한다.',
+				link_code : root + '/examples/control/uGisCircleMeasure.html',
+				link_view : root + '/examples/control/uGisCircleMeasure_view.html',
+				img : imagesPath + 'control/uGisCircleMeasure.gif',
+				requires : [ PO.MAP, PO.CONTROL.MEASURE_CIRCLE ]
 			}
 		},
 
@@ -810,7 +824,7 @@
 			},
 			{
 				name : 'Control',
-				examples : [ PE.CONTROL.DRAGPAN, PE.CONTROL.ZOOMIN, PE.CONTROL.ZOOMOUT, PE.CONTROL.DRAWFEATURE, PE.CONTROL.LENGTH, PE.CONTROL.AREA ]
+				examples : [ PE.CONTROL.DRAGPAN, PE.CONTROL.ZOOMIN, PE.CONTROL.ZOOMOUT, PE.CONTROL.DRAWFEATURE, PE.CONTROL.LENGTH, PE.CONTROL.AREA, PE.CONTROL.MEASURE_CIRCLE]
 			},
 			{
 				name : 'Manager',
