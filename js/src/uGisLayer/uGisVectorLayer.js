@@ -12,11 +12,12 @@
 	 * 
 	 * <pre>
 	 * var ugVectorLayer = new ugmp.layer.uGisVectorLayer( {
-	 * 	srsName :'EPSG:3857',
+	 * 	declutter : true, 
+	 * 	srsName : 'EPSG:3857',
+	 * 	style : new ol.style.Style({...}),
 	 * 	features : [ new ol.Feature( {
 	 * 	 	geometry : new ol.geom.Polygon({...})
-	 * 	} ) ],
-	 * 	style : new ol.style.Style({...})
+	 * 	} ) ]
 	 * } );
 	 * </pre>
 	 * 
@@ -25,6 +26,7 @@
 	 * @param opt_options {Object}
 	 * @param opt_options.srsName {String} 좌표계. Default is `EPSG:3857`.
 	 * @param opt_options.features {Array<ol.Feature>|ol.Collection} 피처.
+	 * @param opt_options.declutter {Boolean} 디클러터링 설정 (이미지, 텍스트). Default is `true`.
 	 * @param opt_options.style {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction} 스타일.
 	 * 
 	 * @Extends {ugmp.layer.uGisLayerDefault}
@@ -36,8 +38,9 @@
 		var _super = null;
 
 		this.style = null;
-		this.srsName = null;
 		this.features = null;
+		this.srsName = null;
+		this.declutter = null;
 
 
 		/**
@@ -53,12 +56,13 @@
 			_super = ugmp.layer.uGisLayerDefault.call( _self, options );
 
 			_self.style = ( options.style !== undefined ) ? options.style : undefined;
-			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
 			_self.features = ( options.features !== undefined ) ? options.features : [];
+			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
+			_self.declutter = ( typeof ( options.declutter ) === "boolean" ) ? options.declutter : true;
 
 			_self.olLayer = new ol.layer.Vector( {
 				// zIndex : 8999,
-				declutter : true,
+				declutter : false,
 				style : _self.style,
 				source : new ol.source.Vector( {
 					features : _self.features
