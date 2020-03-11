@@ -23,28 +23,33 @@
 			var options = opt_options || {};
 
 			options.isWorld = false;
-			options.isFactor = false;
+			options.isFactor = true;
 			options.baseCode = "naver";
-			options.projection = "EPSG:5181";
-			options.maxExtent = ol.proj.get( "EPSG:5181" ).getExtent();
+			options.projection = "EPSG:3857";
+			options.maxExtent = [ 13833615.936057687, 3779460.9620584883, 14690783.774134403, 4666706.57663997 ];
 			options.mapTypes = {
 				normal : {
 					id : "normal", // naver.maps.MapTypeId[ "NORMAL" ]
-					minZoom : 1,
-					maxZoom : 14
+					minZoom : 6,
+					maxZoom : 21
 				},
 				satellite : {
-					id : "satellite", // naver.maps.MapTypeId[ "SATELLITE" ] 
-					minZoom : 1,
-					maxZoom : 14
+					id : "satellite", // naver.maps.MapTypeId[ "SATELLITE" ]
+					minZoom : 6,
+					maxZoom : 21
 				},
 				hybrid : {
 					id : "hybrid", // naver.maps.MapTypeId[ "HYBRID" ]
-					minZoom : 1,
-					maxZoom : 14
+					minZoom : 6,
+					maxZoom : 21
+				},
+				terrain : {
+					id : "terrain", // naver.maps.MapTypeId[ "TERRAIN" ]
+					minZoom : 6,
+					maxZoom : 21
 				}
 			};
-			
+
 			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
 
 			_self.checkIsAvailable( "naver.maps.MapTypeId" );

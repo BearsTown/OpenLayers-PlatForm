@@ -10,7 +10,7 @@
 	 * 
 	 * 1. Google(normal, terrain, satellite, hybrid) : 월 28,500건 무료.
 	 * 
-	 * 2. OpenStreetMap(none, normal, gray) : 무제한 무료.
+	 * 2. OpenStreetMap(normal, gray) : 무제한 무료.
 	 * 
 	 * 3. Stamen(toner, terrain) : 무제한 무료.
 	 * 
@@ -18,9 +18,9 @@
 	 * 
 	 * 5. 바로E맵(normal, white, colorVision) : 무제한 무료.
 	 * 
-	 * 6. 네이버(normal, satellite, hybrid) : 2019년 12월 31일 까지 월 6,000,000건 무료.
+	 * 6. 네이버(normal, satellite, hybrid, terrain) : 무료.
 	 * 
-	 * 7. 다음(normal, satellite, hybrid) : 월 600,000건 무료.
+	 * 7. 다음(normal, satellite, hybrid) : 월 300,000건 무료.
 	 * 
 	 * 8. Bing(normal, aerial, hybrid, dark) : 1년 125,000건 무료.
 	 * 
@@ -310,6 +310,9 @@
 				/**
 				 * ★ - To do : 피처 좌표변경 추가 작업 필요.
 				 */
+
+				if ( source instanceof ol.source.Cluster ) return false;
+
 				var features = source.getFeatures();
 				for ( var idx_feature in features ) {
 					features[ idx_feature ].getGeometry().transform( source_, destination_ );
@@ -476,6 +479,8 @@
 			}
 
 		}
+
+		_self.setVisible( true );
 
 		_self.uGisMap.refresh();
 

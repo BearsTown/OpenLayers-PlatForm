@@ -519,7 +519,7 @@
 				var style = ugLayer_._this.style;
 				return new ugmp.layer.uGisClusterLayer( {
 					style : ( typeof style === "function" ) ? style : ugmp.util.uGisUtil.cloneStyle( style ),
-					features : ugmp.util.uGisUtil.cloneFeatures( ugLayer_._this.features ),
+					features : ugmp.util.uGisUtil.cloneFeatures( ugLayer_.getFeatures() ),
 					distance : ugLayer_._this.distance,
 					useAnimation : ugLayer_._this.useAnimation
 				} );
