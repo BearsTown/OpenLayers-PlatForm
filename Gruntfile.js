@@ -39,6 +39,7 @@ module.exports = function (grunt) {
                 src: [
                 	"js/uGisMapPlatForm_grunt.js",
                 	"js/src/olPrototype/layer/*.js",
+                	"js/src/olPrototype/style/*.js",
                     "js/src/olPrototype/interaction/*.js",
                     
                     "js/src/*.js",

@@ -5,7 +5,7 @@
  * 
  * Author : LeeJaeHyuk
  * 
- * Date : 2019.08.20
+ * Date : 2020.03.16
  */
 ( function(window, jQuery) {
 	"use strict";
@@ -17,7 +17,7 @@
 
 	window._$ = jQuery;
 	window.ugmp = {
-		version : "1.4.3",
+		version : "1.4.4",
 		etc : {},
 		toc : {},
 		util : {},
@@ -48,6 +48,7 @@
 		srcPath + "/uGisCapture.js",
 
 		srcPath + "/olPrototype/layer/vector.js",
+		srcPath + "/olPrototype/interaction/uGisPointer.js",
 		srcPath + "/olPrototype/interaction/mouseWheelZoom.js",
 		
 		srcPath + "/etc/uGisRender3D.js",
@@ -111,12 +112,14 @@
 		srcPath + "/uGisControl/uGisControlDefault.js",
 		srcPath + "/uGisControl/uGisDragPan.js",
 		srcPath + "/uGisControl/uGisMapClick.js",
+//		srcPath + "/uGisControl/uGisDragFeature.js",
 		srcPath + "/uGisControl/uGisDragZoomIn.js",
 		srcPath + "/uGisControl/uGisDragZoomOut.js",
 		srcPath + "/uGisControl/uGisDrawFeature.js",
 		srcPath + "/uGisControl/uGisMeasureDefault.js",
 		srcPath + "/uGisControl/uGisLengthMeasure.js",
 		srcPath + "/uGisControl/uGisAreaMeasure.js",
+		srcPath + "/uGisControl/uGisCircleMeasure.js",
 
 		srcPath + "/uGisManager/uGisLayerManager.js",
 		srcPath + "/uGisManager/uGisControlManager.js"

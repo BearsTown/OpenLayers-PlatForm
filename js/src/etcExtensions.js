@@ -3,8 +3,8 @@
  * 
  * Author : LeeJaeHyuk
  */
-( function(window) {	
-	
+( function(window) {
+
 	/**
 	 * element resize 감지 이벤트
 	 */
@@ -66,7 +66,9 @@
 						element.__resizeLast__.width = element.offsetWidth;
 						element.__resizeLast__.height = element.offsetHeight;
 						element.__resizeListeners__.forEach( function(fn) {
-							fn.call( element, e );
+							if ( fn ) {
+								fn.call( element, e );
+							}
 						} );
 					}
 				} );

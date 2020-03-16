@@ -161,7 +161,7 @@
 
 					_self.compatibleDragPan.set( "uGisDragPan", true );
 
-					_self.uGisMap.getMap().addInteraction( _self.compatibleDragPan );
+					_self.uGisMap.getMap().getInteractions().insertAt( 0, _self.compatibleDragPan );
 				} else {
 					_self.compatibleDragPan.setActive( true );
 				}

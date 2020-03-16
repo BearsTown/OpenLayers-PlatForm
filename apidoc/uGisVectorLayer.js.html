@@ -2243,6 +2243,67 @@
             </ul>
         </li>
     
+        <li class="item" data-name="ugmp.control.uGisCircleMeasure">
+            <span class="title">
+                <a href="ugmp.control.uGisCircleMeasure.html">ugmp.control.uGisCircleMeasure</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#clear" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#clear">clear</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#destroy" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getActive">getActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getControlKey" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getControlKey">getControlKey</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getFeatures" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getFeatures">getFeatures</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getInteraction" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getInteraction">getInteraction</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getLayer" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getLayer">getLayer</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#removeFeature" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#removeFeature">removeFeature</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActive">setActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActiveChangeListener" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActiveChangeListener">setActiveChangeListener</a>
+                </li>
+            
+            </ul>
+            <ul class="fires itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="ugmp.control.uGisControlDefault">
             <span class="title">
                 <a href="ugmp.control.uGisControlDefault.html">ugmp.control.uGisControlDefault</a>
@@ -2722,6 +2783,10 @@
             
                 <li data-name="ugmp.layer.uGisClusterLayer#destroy" class="">
                     <a href="ugmp.layer.uGisClusterLayer.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.layer.uGisClusterLayer#getFeatures" class="">
+                    <a href="ugmp.layer.uGisClusterLayer.html#getFeatures">getFeatures</a>
                 </li>
             
                 <li data-name="ugmp.layer.uGisClusterLayer#getLayerKey" class="">
@@ -4145,11 +4210,12 @@
 	 * 
 	 * &lt;pre>
 	 * var ugVectorLayer = new ugmp.layer.uGisVectorLayer( {
-	 * 	srsName :'EPSG:3857',
+	 * 	declutter : true, 
+	 * 	srsName : 'EPSG:3857',
+	 * 	style : new ol.style.Style({...}),
 	 * 	features : [ new ol.Feature( {
 	 * 	 	geometry : new ol.geom.Polygon({...})
-	 * 	} ) ],
-	 * 	style : new ol.style.Style({...})
+	 * 	} ) ]
 	 * } );
 	 * &lt;/pre>
 	 * 
@@ -4158,6 +4224,7 @@
 	 * @param opt_options {Object}
 	 * @param opt_options.srsName {String} 좌표계. Default is `EPSG:3857`.
 	 * @param opt_options.features {Array&lt;ol.Feature>|ol.Collection} 피처.
+	 * @param opt_options.declutter {Boolean} 디클러터링 설정 (이미지, 텍스트). Default is `true`.
 	 * @param opt_options.style {ol.style.Style|Array.&lt;ol.style.Style>|ol.StyleFunction} 스타일.
 	 * 
 	 * @Extends {ugmp.layer.uGisLayerDefault}
@@ -4169,8 +4236,9 @@
 		var _super = null;
 
 		this.style = null;
-		this.srsName = null;
 		this.features = null;
+		this.srsName = null;
+		this.declutter = null;
 
 
 		/**
@@ -4186,12 +4254,13 @@
 			_super = ugmp.layer.uGisLayerDefault.call( _self, options );
 
 			_self.style = ( options.style !== undefined ) ? options.style : undefined;
-			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
 			_self.features = ( options.features !== undefined ) ? options.features : [];
+			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
+			_self.declutter = ( typeof ( options.declutter ) === "boolean" ) ? options.declutter : true;
 
 			_self.olLayer = new ol.layer.Vector( {
 				// zIndex : 8999,
-				declutter : true,
+				declutter : false,
 				style : _self.style,
 				source : new ol.source.Vector( {
 					features : _self.features

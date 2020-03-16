@@ -2243,6 +2243,67 @@
             </ul>
         </li>
     
+        <li class="item" data-name="ugmp.control.uGisCircleMeasure">
+            <span class="title">
+                <a href="ugmp.control.uGisCircleMeasure.html">ugmp.control.uGisCircleMeasure</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#clear" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#clear">clear</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#destroy" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getActive">getActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getControlKey" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getControlKey">getControlKey</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getFeatures" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getFeatures">getFeatures</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getInteraction" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getInteraction">getInteraction</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getLayer" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getLayer">getLayer</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#removeFeature" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#removeFeature">removeFeature</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActive">setActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActiveChangeListener" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActiveChangeListener">setActiveChangeListener</a>
+                </li>
+            
+            </ul>
+            <ul class="fires itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="ugmp.control.uGisControlDefault">
             <span class="title">
                 <a href="ugmp.control.uGisControlDefault.html">ugmp.control.uGisControlDefault</a>
@@ -2722,6 +2783,10 @@
             
                 <li data-name="ugmp.layer.uGisClusterLayer#destroy" class="">
                     <a href="ugmp.layer.uGisClusterLayer.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.layer.uGisClusterLayer#getFeatures" class="">
+                    <a href="ugmp.layer.uGisClusterLayer.html#getFeatures">getFeatures</a>
                 </li>
             
                 <li data-name="ugmp.layer.uGisClusterLayer#getLayerKey" class="">
@@ -4143,7 +4208,7 @@
 	 * 
 	 * 1. Google(normal, terrain, satellite, hybrid) : 월 28,500건 무료.
 	 * 
-	 * 2. OpenStreetMap(none, normal, gray) : 무제한 무료.
+	 * 2. OpenStreetMap(normal, gray) : 무제한 무료.
 	 * 
 	 * 3. Stamen(toner, terrain) : 무제한 무료.
 	 * 
@@ -4151,9 +4216,9 @@
 	 * 
 	 * 5. 바로E맵(normal, white, colorVision) : 무제한 무료.
 	 * 
-	 * 6. 네이버(normal, satellite, hybrid) : 2019년 12월 31일 까지 월 6,000,000건 무료.
+	 * 6. 네이버(normal, satellite, hybrid, terrain) : 무료.
 	 * 
-	 * 7. 다음(normal, satellite, hybrid) : 월 600,000건 무료.
+	 * 7. 다음(normal, satellite, hybrid) : 월 300,000건 무료.
 	 * 
 	 * 8. Bing(normal, aerial, hybrid, dark) : 1년 125,000건 무료.
 	 * 
@@ -4443,6 +4508,9 @@
 				/**
 				 * ★ - To do : 피처 좌표변경 추가 작업 필요.
 				 */
+
+				if ( source instanceof ol.source.Cluster ) return false;
+
 				var features = source.getFeatures();
 				for ( var idx_feature in features ) {
 					features[ idx_feature ].getGeometry().transform( source_, destination_ );
@@ -4609,6 +4677,8 @@
 			}
 
 		}
+
+		_self.setVisible( true );
 
 		_self.uGisMap.refresh();
 

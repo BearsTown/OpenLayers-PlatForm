@@ -85,7 +85,7 @@
 				var map = mapBrowserEvent.map;
 
 				mapBrowserEvent.preventDefault();
-				stopEvent = true;
+				// stopEvent = true;
 
 				_self.interaction.dispatchEvent( {
 					type : 'singleClick',

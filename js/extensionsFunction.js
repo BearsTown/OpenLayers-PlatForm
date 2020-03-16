@@ -247,13 +247,8 @@
 
 		return zero + n;
 	};
-	
-	
-	
-	
-	
-	
-	
+
+
 	window.eF.elementResizeListener = ( function(opt_options) {
 		var _self = this;
 
@@ -261,31 +256,25 @@
 		 * Initialize
 		 */
 		( function() {
-			
+
 			_self._init();
 
 		} )();
-		
+
 		return {
 			_this : _self
 		}
 
 	} )();
-	
-	
+
+
 	window.eF.elementResizeListener.prototype._init = ( function() {
 		var _self = this._this || this;
-		
-		
+
+
 	} );
-	
-	
-	
-	
-	
-	
-	
-	
+
+
 	/**
 	 * element resize 감지 이벤트
 	 */
@@ -347,7 +336,9 @@
 						element.__resizeLast__.width = element.offsetWidth;
 						element.__resizeLast__.height = element.offsetHeight;
 						element.__resizeListeners__.forEach( function(fn) {
-							fn.call( element, e );
+							if ( !fn ) {
+								fn.call( element, e );
+							}
 						} );
 					}
 				} );
@@ -437,7 +428,6 @@
 			}
 		} );
 	}( jQuery ) );
-	
-	
+
 
 } )( window );

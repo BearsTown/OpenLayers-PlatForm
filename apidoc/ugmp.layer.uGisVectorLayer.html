@@ -2243,6 +2243,67 @@
             </ul>
         </li>
     
+        <li class="item" data-name="ugmp.control.uGisCircleMeasure">
+            <span class="title">
+                <a href="ugmp.control.uGisCircleMeasure.html">ugmp.control.uGisCircleMeasure</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#clear" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#clear">clear</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#destroy" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getActive">getActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getControlKey" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getControlKey">getControlKey</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getFeatures" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getFeatures">getFeatures</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getInteraction" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getInteraction">getInteraction</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getLayer" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getLayer">getLayer</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#removeFeature" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#removeFeature">removeFeature</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActive">setActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActiveChangeListener" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActiveChangeListener">setActiveChangeListener</a>
+                </li>
+            
+            </ul>
+            <ul class="fires itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="ugmp.control.uGisControlDefault">
             <span class="title">
                 <a href="ugmp.control.uGisControlDefault.html">ugmp.control.uGisControlDefault</a>
@@ -2722,6 +2783,10 @@
             
                 <li data-name="ugmp.layer.uGisClusterLayer#destroy" class="">
                     <a href="ugmp.layer.uGisClusterLayer.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.layer.uGisClusterLayer#getFeatures" class="">
+                    <a href="ugmp.layer.uGisClusterLayer.html#getFeatures">getFeatures</a>
                 </li>
             
                 <li data-name="ugmp.layer.uGisClusterLayer#getLayerKey" class="">
@@ -4155,7 +4220,7 @@
     
         
         <div class="tag-source">
-            <a href="uGisVectorLayer.js.html">uGisLayer/uGisVectorLayer.js</a>, <a href="uGisVectorLayer.js.html#line34">line 34</a>
+            <a href="uGisVectorLayer.js.html">uGisLayer/uGisVectorLayer.js</a>, <a href="uGisVectorLayer.js.html#line36">line 36</a>
         </div>
         
     </div>
@@ -4286,6 +4351,29 @@
 	
         <tr>
             
+                <td class="name"><code>declutter</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>디클러터링 설정 (이미지, 텍스트). Default is <code>true</code>.</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
                 <td class="name"><code>style</code></td>
             
             
@@ -4370,7 +4458,7 @@
         
 
     
-    <pre class="prettyprint">var ugVectorLayer = new ugmp.layer.uGisVectorLayer( {	srsName :'EPSG:3857',	features : [ new ol.Feature( {	 	geometry : new ol.geom.Polygon({...})	} ) ],	style : new ol.style.Style({...})} );</pre>
+    <pre class="prettyprint">var ugVectorLayer = new ugmp.layer.uGisVectorLayer( {	declutter : true, 	srsName : 'EPSG:3857',	style : new ol.style.Style({...}),	features : [ new ol.Feature( {	 	geometry : new ol.geom.Polygon({...})	} ) ]} );</pre>
     
 
     
@@ -4429,7 +4517,7 @@
     
         
         <div class="tag-source">
-            <a href="uGisVectorLayer.js.html">uGisLayer/uGisVectorLayer.js</a>, <a href="uGisVectorLayer.js.html#line92">line 92</a>
+            <a href="uGisVectorLayer.js.html">uGisLayer/uGisVectorLayer.js</a>, <a href="uGisVectorLayer.js.html#line96">line 96</a>
         </div>
         
     </div>
@@ -4547,7 +4635,7 @@
     
         
         <div class="tag-source">
-            <a href="uGisVectorLayer.js.html">uGisLayer/uGisVectorLayer.js</a>, <a href="uGisVectorLayer.js.html#line112">line 112</a>
+            <a href="uGisVectorLayer.js.html">uGisLayer/uGisVectorLayer.js</a>, <a href="uGisVectorLayer.js.html#line116">line 116</a>
         </div>
         
     </div>
@@ -4695,7 +4783,7 @@
     
         
         <div class="tag-source">
-            <a href="uGisVectorLayer.js.html">uGisLayer/uGisVectorLayer.js</a>, <a href="uGisVectorLayer.js.html#line103">line 103</a>
+            <a href="uGisVectorLayer.js.html">uGisLayer/uGisVectorLayer.js</a>, <a href="uGisVectorLayer.js.html#line107">line 107</a>
         </div>
         
     </div>

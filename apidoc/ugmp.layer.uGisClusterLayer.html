@@ -2243,6 +2243,67 @@
             </ul>
         </li>
     
+        <li class="item" data-name="ugmp.control.uGisCircleMeasure">
+            <span class="title">
+                <a href="ugmp.control.uGisCircleMeasure.html">ugmp.control.uGisCircleMeasure</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#clear" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#clear">clear</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#destroy" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getActive">getActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getControlKey" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getControlKey">getControlKey</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getFeatures" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getFeatures">getFeatures</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getInteraction" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getInteraction">getInteraction</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getLayer" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getLayer">getLayer</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#removeFeature" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#removeFeature">removeFeature</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActive">setActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActiveChangeListener" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActiveChangeListener">setActiveChangeListener</a>
+                </li>
+            
+            </ul>
+            <ul class="fires itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="ugmp.control.uGisControlDefault">
             <span class="title">
                 <a href="ugmp.control.uGisControlDefault.html">ugmp.control.uGisControlDefault</a>
@@ -2722,6 +2783,10 @@
             
                 <li data-name="ugmp.layer.uGisClusterLayer#destroy" class="">
                     <a href="ugmp.layer.uGisClusterLayer.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.layer.uGisClusterLayer#getFeatures" class="">
+                    <a href="ugmp.layer.uGisClusterLayer.html#getFeatures">getFeatures</a>
                 </li>
             
                 <li data-name="ugmp.layer.uGisClusterLayer#getLayerKey" class="">
@@ -4393,7 +4458,7 @@
         
 
     
-    <pre class="prettyprint">var ugVectorLayer = new ugmp.layer.uGisClusterLayer( {	distance : 50,	features : [ new ol.Feature( {		geometry : new ol.geom.Point({...})	} ) ],	useAnimation : true,	style : new ol.style.Style({...})} );</pre>
+    <pre class="prettyprint">var ugVectorLayer = new ugmp.layer.uGisClusterLayer( {distance : 50,features : [ new ol.Feature( {	geometry : new ol.geom.Point({...})} ) ],useAnimation : true,style : new ol.style.Style({...})} );</pre>
     
 
     
@@ -4509,6 +4574,88 @@
     
     
     
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <div class="anchor" id="getFeatures">
+        </div>
+        <h4 class="name">
+            
+            getFeatures<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Array.&lt;ol.Feature>}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="uGisClusterLayer.js.html">uGisLayer/uGisClusterLayer.js</a>, <a href="uGisClusterLayer.js.html#line204">line 204</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>레이어의 Feature 리스트를 가져온다.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+<h5>Returns:</h5>
+features  피처 리스트.
+<br />
+
     
     
     
@@ -5210,7 +5357,7 @@ visible  visible 상태.
     
         
         <div class="tag-source">
-            <a href="uGisClusterLayer.js.html">uGisLayer/uGisClusterLayer.js</a>, <a href="uGisClusterLayer.js.html#line190">line 190</a>
+            <a href="uGisClusterLayer.js.html">uGisLayer/uGisClusterLayer.js</a>, <a href="uGisClusterLayer.js.html#line191">line 191</a>
         </div>
         
     </div>
@@ -5955,7 +6102,7 @@ visible  visible 상태.
     
         
         <div class="tag-source">
-            <a href="uGisClusterLayer.js.html">uGisLayer/uGisClusterLayer.js</a>, <a href="uGisClusterLayer.js.html#line179">line 179</a>
+            <a href="uGisClusterLayer.js.html">uGisLayer/uGisClusterLayer.js</a>, <a href="uGisClusterLayer.js.html#line180">line 180</a>
         </div>
         
     </div>

@@ -5,7 +5,7 @@
  * 
  * Author : LeeJaeHyuk
  * 
- * Date : 2019.08.20
+ * Date : 2020.03.16
  */
 ( function(window, jQuery) {
 	"use strict";
@@ -17,7 +17,7 @@
 
 	window._$ = jQuery;
 	window.ugmp = {
-		version : "1.4.3",
+		version : "1.4.4",
 		etc : {},
 		toc : {},
 		util : {},
@@ -116,6 +116,299 @@
 		return listenerKey;
 	} );
 
+} )();
+
+( function() {
+	"use strict";
+
+	/*
+	 * Copyright (c) 2015 Jean-Marc VIGLINO, released under the CeCILL-B license (French BSD license)
+	 * (http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.txt).
+	 * 
+	 * Photo style for vector features
+	 */
+	/**
+	 * @classdesc Set Photo style for vector features.
+	 * 
+	 * @constructor
+	 * @param {} options
+	 * @param { default | square | round | anchored | folio } options.kind
+	 * @param {boolean} options.crop crop within square, default is false
+	 * @param {Number} options.radius symbol size
+	 * @param {boolean} options.shadow drop a shadow
+	 * @param {ol.style.Stroke} options.stroke
+	 * @param {String} options.src image src
+	 * @param {String} options.crossOrigin The crossOrigin attribute for loaded images. Note that you must provide a crossOrigin value if
+	 *            you want to access pixel data with the Canvas renderer.
+	 * @param {Number} options.offsetX Horizontal offset in pixels. Default is 0.
+	 * @param {Number} options.offsetY Vertical offset in pixels. Default is 0.
+	 * @param {function} options.onload callback when image is loaded (to redraw the layer)
+	 * @extends {ol.style.RegularShape}
+	 * @implements {ol.structs.IHasChecksum}
+	 * @api
+	 */
+	ol.style.Photo = function(options) {
+	  options = options || {};
+	  this.sanchor_ = options.kind=="anchored" ? 8:0;
+	  this.shadow_ = Number(options.shadow) || 0;
+	  if (!options.stroke) {
+	    options.stroke = new ol.style.Stroke({ width: 0, color: "#000"})
+	  }
+	  var strokeWidth = options.stroke.getWidth();
+	  if (strokeWidth<0) strokeWidth = 0;
+	  if (options.kind=='folio') strokeWidth += 6;
+	  options.stroke.setWidth(strokeWidth);
+	  ol.style.RegularShape.call (this, {
+	    radius: options.radius + strokeWidth + this.sanchor_/2 + this.shadow_/2, 
+	    points:0
+	  // fill:new ol.style.Fill({color:"red"}) // No fill to create a hit detection Image
+	  });
+	  // Hack to get the hit detection Image (no API exported)
+	  if (!this.hitDetectionCanvas_) {
+	    var img = this.getImage();
+	    for (var i in this) {
+	      if (this[i] && this[i].getContext && this[i]!==img) {
+	        this.hitDetectionCanvas_ = this[i];
+	        break;
+	      }
+	    }
+	  }
+	  // Clone canvas for hit detection
+	  this.hitDetectionCanvas_ = document.createElement('canvas');
+	  this.hitDetectionCanvas_.width = this.getImage().width;
+	  this.hitDetectionCanvas_.height = this.getImage().height;
+	  this.stroke_ = options.stroke;
+	  this.fill_ = options.fill;
+	  this.crop_ = options.crop;
+	  this.crossOrigin_ = options.crossOrigin;
+	  this.kind_ = options.kind || "default";
+	  this.radius_ = options.radius;
+	  this.src_ = options.src;
+	  this.offset_ = [options.offsetX ? options.offsetX :0, options.offsetY ? options.offsetY :0];
+	  this.onload_ = options.onload;
+	  if (typeof(options.opacity)=='number') this.setOpacity(options.opacity);
+	  if (typeof(options.rotation)=='number') this.setRotation(options.rotation);
+	  this.renderPhoto_();
+	};
+	ol.inherits(ol.style.Photo, ol.style.RegularShape);
+	
+	
+	/**
+	 * Clones the style.
+	 * 
+	 * @return {ol.style.Photo}
+	 */
+	ol.style.Photo.prototype.clone = function() {
+	  return new ol.style.Photo({
+	    stroke: this.stroke_,
+	    fill: this.fill_,
+	    shadow: this.shadow_,
+	    crop: this.crop_,
+	    crossOrigin: this.crossOrigin_,
+	    kind: this.kind_,
+	    radius: this.radius_,
+	    src: this.src_,
+	    offsetX: this.offset_[0],
+	    offsetY: this.offset_[1],
+	    opacity: this.getOpacity(),
+	    rotation: this.getRotation()
+	  });
+	};
+	
+	
+	/**
+	 * Draws a rounded rectangle using the current state of the canvas. Draw a rectangle if the radius is null.
+	 * 
+	 * @param {Number} x The top left x coordinate
+	 * @param {Number} y The top left y coordinate
+	 * @param {Number} width The width of the rectangle
+	 * @param {Number} height The height of the rectangle
+	 * @param {Number} radius The corner radius.
+	 */
+	CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+	  if (!r) {
+	    this.rect(x,y,w,h);
+	  } else {
+	    if (w < 2 * r) r = w / 2;
+	    if (h < 2 * r) r = h / 2;
+	    this.beginPath();
+	    this.moveTo(x+r, y);
+	    this.arcTo(x+w, y, x+w, y+h, r);
+	    this.arcTo(x+w, y+h, x, y+h, r);
+	    this.arcTo(x, y+h, x, y, r);
+	    this.arcTo(x, y, x+w, y, r);
+	    this.closePath();
+	  }
+	  return this;
+	};
+	
+	
+	/**
+	 * Draw the form without the image
+	 * 
+	 * @private
+	 */
+	ol.style.Photo.prototype.drawBack_ = function(context, color, strokeWidth) {
+	  var canvas = context.canvas;
+	  context.beginPath();
+	  context.fillStyle = color;
+	  context.clearRect(0, 0, canvas.width, canvas.height);
+	  switch (this.kind_) {
+	    case 'square': {
+	      context.rect(0,0,canvas.width-this.shadow_, canvas.height-this.shadow_);
+	      break;
+	    }
+	    case 'circle': {
+	      context.arc(this.radius_+strokeWidth, this.radius_+strokeWidth, this.radius_+strokeWidth, 0, 2 * Math.PI, false);
+	      break;
+	    }
+	    case 'folio': {
+	      var offset = 6;
+	      strokeWidth -= offset;
+	      context.strokeStyle = 'rgba(0,0,0,0.5)';
+	      var w = canvas.width-this.shadow_-2*offset;
+	      var a = Math.atan(6/w);
+	      context.save();
+	      context.rotate(-a);
+	      context.translate(-6,2);
+	      context.beginPath();
+	      context.rect(offset,offset,w,w);
+	      context.stroke();
+	      context.fill();
+	      context.restore();
+	      context.save();
+	      context.translate(6,-1);
+	      context.rotate(a);
+	      context.beginPath();
+	      context.rect(offset,offset,w,w);
+	      context.stroke();
+	      context.fill();
+	      context.restore();
+	      context.beginPath();
+	      context.rect(offset,offset,w,w);
+	      context.stroke();
+	      break;
+	    }
+	    case 'anchored': {
+	      context.roundRect(this.sanchor_/2,0,canvas.width-this.sanchor_-this.shadow_, canvas.height-this.sanchor_-this.shadow_, strokeWidth);
+	      context.moveTo(canvas.width/2-this.sanchor_-this.shadow_/2,canvas.height-this.sanchor_-this.shadow_);
+	      context.lineTo(canvas.width/2+this.sanchor_-this.shadow_/2,canvas.height-this.sanchor_-this.shadow_);
+	      context.lineTo(canvas.width/2-this.shadow_/2,canvas.height-this.shadow_);break;
+	    }
+	    default: {
+	      // roundrect
+	      context.roundRect(0,0,canvas.width-this.shadow_, canvas.height-this.shadow_, strokeWidth);
+	      break;
+	    }
+	  }
+	  context.closePath();
+	};
+	
+	
+	/**
+	 * @private
+	 */
+	ol.style.Photo.prototype.renderPhoto_ = function() {
+	  var strokeStyle;
+	  var strokeWidth = 0;
+	  if (this.stroke_) {
+	    strokeStyle = ol.color.asString(this.stroke_.getColor());
+	    strokeWidth = this.stroke_.getWidth();
+	  }
+	  var canvas = this.getImage();
+	  // Draw hitdetection image
+	  var context = this.hitDetectionCanvas_.getContext('2d');
+	  this.drawBack_(context,"#000",strokeWidth);
+	  context.fill();
+	  // Draw the image
+	  context = canvas.getContext('2d');
+	  this.drawBack_(context,strokeStyle,strokeWidth);
+	  // Draw a shadow
+	  if (this.shadow_) {
+	    context.shadowColor = 'rgba(0,0,0,0.5)';
+	    context.shadowBlur = this.shadow_/2;
+	    context.shadowOffsetX = this.shadow_/2;
+	    context.shadowOffsetY = this.shadow_/2;
+	  }
+	  context.fill();
+	  context.shadowColor = 'transparent';
+	  var self = this;
+	  var img = this.img_ = new Image();
+	  if (this.crossOrigin_) img.crossOrigin = this.crossOrigin_;
+	  img.src = this.src_;
+	  // Draw image
+	  if (img.width) {
+	    self.drawImage_(img);
+	  } else {
+	    img.onload = function() {
+	      self.drawImage_(img);
+	      // Force change (?!)
+	      // self.setScale(1);
+	      if (self.onload_) self.onload_();
+	    };
+	  }
+	  // Set anchor
+	  var a = this.getAnchor();
+	  a[0] = (canvas.width - this.shadow_)/2;
+	  a[1] = (canvas.height - this.shadow_)/2;
+	  if (this.sanchor_) {
+	    a[1] = canvas.height - this.shadow_;
+	  }
+	};
+	
+	
+	/**
+	 * Draw an timage when loaded
+	 * 
+	 * @private
+	 */
+	ol.style.Photo.prototype.drawImage_ = function(img) {
+	  var canvas = this.getImage();
+	  // Remove the circle on the canvas
+	  var context = (canvas.getContext('2d'));
+	  var strokeWidth = 0;
+	  if (this.stroke_) strokeWidth = this.stroke_.getWidth();
+	  var size = 2*this.radius_;
+	  context.save();
+	  if (this.kind_=='circle') {
+	    context.beginPath();
+	    context.arc(this.radius_+strokeWidth, this.radius_+strokeWidth, this.radius_, 0, 2 * Math.PI, false);
+	    context.clip();
+	  }
+	  var s, x, y, w, h, sx, sy, sw, sh;
+	  // Crop the image to a square vignette
+	  if (this.crop_) {
+	    s = Math.min (img.width/size, img.height/size);
+	    sw = sh = s*size;
+	    sx = (img.width-sw)/2;
+	    sy = (img.height-sh)/2;
+	    x = y = 0;
+	    w = h = size+1;
+	  } else {
+	    // Fit the image to the size
+	    s = Math.min (size/img.width, size/img.height);
+	    sx = sy = 0;
+	    sw = img.width;
+	    sh = img.height;
+	    w = s*sw;
+	    h = s*sh;
+	    x = (size-w)/2;
+	    y = (size-h)/2;
+	  }
+	  x += strokeWidth + this.sanchor_/2;
+	  y += strokeWidth;
+	  context.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+	  context.restore();
+	  // Draw a circle to avoid aliasing on clip
+	  if (this.kind_=='circle' && strokeWidth) {
+	    context.beginPath();
+	    context.strokeStyle = ol.color.asString(this.stroke_.getColor());
+	    context.lineWidth = strokeWidth/4;
+	    context.arc(this.radius_+strokeWidth, this.radius_+strokeWidth, this.radius_, 0, 2 * Math.PI, false);
+	    context.stroke();
+	  }
+	};
+	
 } )();
 
 ( function() {
@@ -247,13 +540,230 @@
 
 } )();
 
+( function() {
+	"use strict";
+
+
+	/**
+	 * @constructor
+	 * @extends {ol.interaction.Pointer}
+	 */
+	ol.interaction.uGisPointer = function(opt_options) {
+		var options = opt_options || {};
+
+		ol.interaction.Pointer.call( this, {
+			handleEvent : ol.interaction.uGisPointer.prototype.handleEvent,
+			handleDownEvent : ol.interaction.uGisPointer.prototype.handleDownEvent,
+			handleDragEvent : ol.interaction.uGisPointer.prototype.handleDragEvent,
+			handleMoveEvent : ol.interaction.uGisPointer.prototype.handleMoveEvent,
+			handleUpEvent : ol.interaction.uGisPointer.prototype.handleUpEvent
+		} );
+
+		/**
+		 * @type {Function}
+		 * @private
+		 */
+		this.dragEnd_ = options.dragEnd ? options.dragEnd : null;
+
+		/**
+		 * @type {Function}
+		 * @private
+		 */
+		this.clickEnd_ = options.clickEnd ? options.clickEnd : null;
+
+		/**
+		 * @type {layerFilter}
+		 * @private
+		 */
+		this.layerFilter_ = null;
+
+
+		/**
+		 * @type {ol.Pixel}
+		 * @private
+		 */
+		this.coordinate_ = null;
+
+		/**
+		 * @type {string|undefined}
+		 * @private
+		 */
+		this.cursor_ = 'pointer';
+
+		/**
+		 * @type {ol.Feature}
+		 * @private
+		 */
+		this.feature_ = null;
+
+		/**
+		 * @type {string|undefined}
+		 * @private
+		 */
+		this.previousCursor_ = null;
+
+
+		if ( options.layers ) {
+			if ( typeof options.layers === 'function' ) {
+				this.layerFilter_ = options.layers;
+			} else {
+				var layers = options.layers;
+				this.layerFilter_ = function(layer) {
+					return ol.array.includes( layers, layer );
+				};
+			}
+		} else {
+			this.layerFilter_ = ol.functions.TRUE;
+		}
+
+	};
+	ol.inherits( ol.interaction.uGisPointer, ol.interaction.Pointer );
+
+
+	/**
+	 * @param {ol.MapBrowserEvent} evt Map browser event.
+	 * @return {boolean} `true` to start the drag sequence.
+	 */
+	ol.interaction.uGisPointer.prototype.handleDownEvent = function(evt) {
+		var map = evt.map;
+
+		var feature = map.forEachFeatureAtPixel( evt.pixel, ( function(feature, layer) {
+			if ( ol.functions.TRUE( feature, layer ) ) {
+				if ( feature ) {
+					this.feature_ = feature;
+					this.coordinate_ = evt.coordinate;
+
+					return feature;
+				}
+			}
+		} ).bind( this ), {
+			layerFilter : this.layerFilter_,
+			hitTolerance : 0
+		} );
+
+		return !!feature;
+	};
+
+
+	/**
+	 * @param {ol.MapBrowserEvent} evt Map browser event.
+	 */
+	ol.interaction.uGisPointer.prototype.handleDragEvent = function(evt) {
+		var olMap = evt.map;
+
+		if ( this.dragEnd_ && this.feature_ ) {
+			var deltaX = evt.coordinate[ 0 ] - this.coordinate_[ 0 ];
+			var deltaY = evt.coordinate[ 1 ] - this.coordinate_[ 1 ];
+
+			var geometry = this.feature_.getGeometry();
+			geometry.translate( deltaX, deltaY );
+
+			this.coordinate_[ 0 ] = evt.coordinate[ 0 ];
+			this.coordinate_[ 1 ] = evt.coordinate[ 1 ];
+
+			this.dragEnd_.call( this, this.feature_ );
+		}
+
+		return true;
+	};
+
+
+	/**
+	 * @param {ol.MapBrowserEvent} evt Event.
+	 */
+	ol.interaction.uGisPointer.prototype.handleMoveEvent = function(evt) {
+		if ( this.cursor_ ) {
+			var map = evt.map;
+			var element = map.getViewport();
+
+			var feature = map.forEachFeatureAtPixel( evt.pixel, ( function(feature, layer) {
+				if ( ol.functions.TRUE( feature, layer ) ) {
+					if ( feature ) {
+						return feature;
+					}
+				}
+			} ).bind( this ), {
+				layerFilter : this.layerFilter_,
+				hitTolerance : 0
+			} );
+
+			if ( feature ) {
+				if ( element.style.cursor != this.cursor_ ) {
+					this.previousCursor_ = element.style.cursor;
+					element.style.cursor = this.cursor_;
+				}
+			} else if ( this.previousCursor_ !== undefined ) {
+				element.style.cursor = this.previousCursor_;
+				this.previousCursor_ = undefined;
+			}
+		}
+	};
+
+
+	/**
+	 * @return {boolean} `false` to stop the drag sequence.
+	 */
+	ol.interaction.uGisPointer.prototype.handleUpEvent = function() {
+		this.coordinate_ = null;
+		this.feature_ = null;
+
+		return false;
+	};
+
+
+	ol.interaction.uGisPointer.prototype.handleEvent = function(mapBrowserEvent) {
+		if ( !( mapBrowserEvent instanceof ol.MapBrowserPointerEvent ) ) {
+			return true;
+		}
+
+		var map = mapBrowserEvent.map;
+
+		if ( this.clickEnd_ && ol.events.condition.singleClick( mapBrowserEvent ) ) {
+			var feature = map.forEachFeatureAtPixel( mapBrowserEvent.pixel, ( function(feature, layer) {
+				if ( ol.functions.TRUE( feature, layer ) ) {
+					if ( feature ) {
+						return feature;
+					}
+				}
+			} ).bind( this ), {
+				layerFilter : this.layerFilter_,
+				hitTolerance : 0
+			} );
+
+			this.clickEnd_.call( this, feature );
+		}
+
+		var stopEvent = false;
+		this.updateTrackedPointers_( mapBrowserEvent );
+		if ( this.handlingDownUpSequence ) {
+			if ( mapBrowserEvent.type == ol.MapBrowserEventType.POINTERDRAG ) {
+				this.handleDragEvent_( mapBrowserEvent );
+			} else if ( mapBrowserEvent.type == ol.MapBrowserEventType.POINTERUP ) {
+				var handledUp = this.handleUpEvent_( mapBrowserEvent );
+				this.handlingDownUpSequence = handledUp && this.targetPointers.length > 0;
+			}
+		} else {
+			if ( mapBrowserEvent.type == ol.MapBrowserEventType.POINTERDOWN ) {
+				var handled = this.handleDownEvent_( mapBrowserEvent );
+				this.handlingDownUpSequence = handled;
+				stopEvent = this.shouldStopEvent( handled );
+			} else if ( mapBrowserEvent.type == ol.MapBrowserEventType.POINTERMOVE ) {
+				this.handleMoveEvent_( mapBrowserEvent );
+			}
+		}
+
+		return !stopEvent;
+	};
+
+} )();
+
 /**
  * JavasScript Extensions
  * 
  * Author : LeeJaeHyuk
  */
-( function(window) {	
-	
+( function(window) {
+
 	/**
 	 * element resize 감지 이벤트
 	 */
@@ -315,7 +825,9 @@
 						element.__resizeLast__.width = element.offsetWidth;
 						element.__resizeLast__.height = element.offsetHeight;
 						element.__resizeListeners__.forEach( function(fn) {
-							fn.call( element, e );
+							if ( fn ) {
+								fn.call( element, e );
+							}
 						} );
 					}
 				} );
@@ -929,7 +1441,7 @@
 				var style = ugLayer_._this.style;
 				return new ugmp.layer.uGisClusterLayer( {
 					style : ( typeof style === "function" ) ? style : ugmp.util.uGisUtil.cloneStyle( style ),
-					features : ugmp.util.uGisUtil.cloneFeatures( ugLayer_._this.features ),
+					features : ugmp.util.uGisUtil.cloneFeatures( ugLayer_.getFeatures() ),
 					distance : ugLayer_._this.distance,
 					useAnimation : ugLayer_._this.useAnimation
 				} );
@@ -5742,7 +6254,8 @@
                 var xmlJson = result_.xmlJson;
                 var serviceMetaData = _self.getServiceMetaDataWMTS( olJson );
                 
-				var style = xmlJson["Capabilities"]["Contents"]["Layer"]["Style"];
+                var capabilities = ( xmlJson["Capabilities"] ) ? xmlJson["Capabilities"] : xmlJson["wmts:Capabilities"];
+				var style = capabilities["Contents"]["Layer"]["Style"];
 				if ( style !== undefined ) {
 					var legendURL = style["ows:LegendURL"];
 					if ( legendURL !== undefined ) {
@@ -5751,7 +6264,7 @@
 	    	        }
 				}
 				
-    	        var extra_serviceIdentification = xmlJson["Capabilities"]["ows:ServiceIdentification"];    	        
+    	        var extra_serviceIdentification = capabilities["ows:ServiceIdentification"];    	        
     	        
     	        if(extra_serviceIdentification  !== undefined ) {
     	        	if ( extra_serviceIdentification["ows:Abstract"] ) {
@@ -6218,12 +6731,12 @@
 	 * 
 	 * <pre>
 	 * var ugVectorLayer = new ugmp.layer.uGisClusterLayer( {
-	 *	distance : 50,
-	 *	features : [ new ol.Feature( {
-	 *		geometry : new ol.geom.Point({...})
-	 *	} ) ],
-	 *	useAnimation : true,
-	 *	style : new ol.style.Style({...})
+	 * distance : 50,
+	 * features : [ new ol.Feature( {
+	 * 	geometry : new ol.geom.Point({...})
+	 * } ) ],
+	 * useAnimation : true,
+	 * style : new ol.style.Style({...})
 	 * } );
 	 * </pre>
 	 * 
@@ -6285,6 +6798,7 @@
 		return ugmp.util.uGisUtil.objectMerge( _super, {
 			_this : _self,
 			setDistance : _self.setDistance,
+			getFeatures : _self.getFeatures,
 			setUseAnimation : _self.setUseAnimation
 		} );
 
@@ -6398,6 +6912,17 @@
 
 		var source = _self.olLayer.getSource();
 		ol.source.Cluster.prototype.setDistance.call( source, distance_ );
+	};
+
+
+	/**
+	 * 레이어의 Feature 리스트를 가져온다.
+	 * 
+	 * @return features {Array.<ol.Feature>} 피처 리스트.
+	 */
+	ugmp.layer.uGisClusterLayer.prototype.getFeatures = function() {
+		var _self = this._this || this;
+		return _self.olLayer.getSource().getSource().getFeatures();
 	};
 
 
@@ -6791,11 +7316,12 @@
 	 * 
 	 * <pre>
 	 * var ugVectorLayer = new ugmp.layer.uGisVectorLayer( {
-	 * 	srsName :'EPSG:3857',
+	 * 	declutter : true, 
+	 * 	srsName : 'EPSG:3857',
+	 * 	style : new ol.style.Style({...}),
 	 * 	features : [ new ol.Feature( {
 	 * 	 	geometry : new ol.geom.Polygon({...})
-	 * 	} ) ],
-	 * 	style : new ol.style.Style({...})
+	 * 	} ) ]
 	 * } );
 	 * </pre>
 	 * 
@@ -6804,6 +7330,7 @@
 	 * @param opt_options {Object}
 	 * @param opt_options.srsName {String} 좌표계. Default is `EPSG:3857`.
 	 * @param opt_options.features {Array<ol.Feature>|ol.Collection} 피처.
+	 * @param opt_options.declutter {Boolean} 디클러터링 설정 (이미지, 텍스트). Default is `true`.
 	 * @param opt_options.style {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction} 스타일.
 	 * 
 	 * @Extends {ugmp.layer.uGisLayerDefault}
@@ -6815,8 +7342,9 @@
 		var _super = null;
 
 		this.style = null;
-		this.srsName = null;
 		this.features = null;
+		this.srsName = null;
+		this.declutter = null;
 
 
 		/**
@@ -6832,12 +7360,13 @@
 			_super = ugmp.layer.uGisLayerDefault.call( _self, options );
 
 			_self.style = ( options.style !== undefined ) ? options.style : undefined;
-			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
 			_self.features = ( options.features !== undefined ) ? options.features : [];
+			_self.srsName = ( options.srsName !== undefined ) ? options.srsName : "EPSG:3857";
+			_self.declutter = ( typeof ( options.declutter ) === "boolean" ) ? options.declutter : true;
 
 			_self.olLayer = new ol.layer.Vector( {
 				// zIndex : 8999,
-				declutter : true,
+				declutter : false,
 				style : _self.style,
 				source : new ol.source.Vector( {
 					features : _self.features
@@ -10439,7 +10968,7 @@
 	 * 
 	 * 1. Google(normal, terrain, satellite, hybrid) : 월 28,500건 무료.
 	 * 
-	 * 2. OpenStreetMap(none, normal, gray) : 무제한 무료.
+	 * 2. OpenStreetMap(normal, gray) : 무제한 무료.
 	 * 
 	 * 3. Stamen(toner, terrain) : 무제한 무료.
 	 * 
@@ -10447,9 +10976,9 @@
 	 * 
 	 * 5. 바로E맵(normal, white, colorVision) : 무제한 무료.
 	 * 
-	 * 6. 네이버(normal, satellite, hybrid) : 2019년 12월 31일 까지 월 6,000,000건 무료.
+	 * 6. 네이버(normal, satellite, hybrid, terrain) : 무료.
 	 * 
-	 * 7. 다음(normal, satellite, hybrid) : 월 600,000건 무료.
+	 * 7. 다음(normal, satellite, hybrid) : 월 300,000건 무료.
 	 * 
 	 * 8. Bing(normal, aerial, hybrid, dark) : 1년 125,000건 무료.
 	 * 
@@ -10739,6 +11268,9 @@
 				/**
 				 * ★ - To do : 피처 좌표변경 추가 작업 필요.
 				 */
+
+				if ( source instanceof ol.source.Cluster ) return false;
+
 				var features = source.getFeatures();
 				for ( var idx_feature in features ) {
 					features[ idx_feature ].getGeometry().transform( source_, destination_ );
@@ -10905,6 +11437,8 @@
 			}
 
 		}
+
+		_self.setVisible( true );
 
 		_self.uGisMap.refresh();
 
@@ -12204,28 +12738,33 @@
 			var options = opt_options || {};
 
 			options.isWorld = false;
-			options.isFactor = false;
+			options.isFactor = true;
 			options.baseCode = "naver";
-			options.projection = "EPSG:5181";
-			options.maxExtent = ol.proj.get( "EPSG:5181" ).getExtent();
+			options.projection = "EPSG:3857";
+			options.maxExtent = [ 13833615.936057687, 3779460.9620584883, 14690783.774134403, 4666706.57663997 ];
 			options.mapTypes = {
 				normal : {
 					id : "normal", // naver.maps.MapTypeId[ "NORMAL" ]
-					minZoom : 1,
-					maxZoom : 14
+					minZoom : 6,
+					maxZoom : 21
 				},
 				satellite : {
-					id : "satellite", // naver.maps.MapTypeId[ "SATELLITE" ] 
-					minZoom : 1,
-					maxZoom : 14
+					id : "satellite", // naver.maps.MapTypeId[ "SATELLITE" ]
+					minZoom : 6,
+					maxZoom : 21
 				},
 				hybrid : {
 					id : "hybrid", // naver.maps.MapTypeId[ "HYBRID" ]
-					minZoom : 1,
-					maxZoom : 14
+					minZoom : 6,
+					maxZoom : 21
+				},
+				terrain : {
+					id : "terrain", // naver.maps.MapTypeId[ "TERRAIN" ]
+					minZoom : 6,
+					maxZoom : 21
 				}
 			};
-			
+
 			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
 
 			_self.checkIsAvailable( "naver.maps.MapTypeId" );
@@ -16115,7 +16654,7 @@
 
 					_self.compatibleDragPan.set( "uGisDragPan", true );
 
-					_self.uGisMap.getMap().addInteraction( _self.compatibleDragPan );
+					_self.uGisMap.getMap().getInteractions().insertAt( 0, _self.compatibleDragPan );
 				} else {
 					_self.compatibleDragPan.setActive( true );
 				}
@@ -16825,6 +17364,186 @@
 	"use strict";
 
 	/**
+	 * 원 면적 측정 객체.
+	 * 
+	 * 마우스로 지도상에서 원 면적을 측정할 수 있는 객체.
+	 * 
+	 * @constructor
+	 * 
+	 * @example
+	 * 
+	 * <pre>
+	 * var ugCircleMeasure = new ugmp.control.uGisCircleMeasure( {
+	 * 	uGisMap : new ugmp.uGisMap({...}),
+	 * 	useSnap : true,
+	 * 	useDragPan : true,
+	 * 	cursorCssName : 'cursor-measureArea',
+	 * 	activeChangeListener : function(state_) {
+	 * 		console.log( state_ );
+	 * 	}
+	 * } );
+	 * </pre>
+	 * 
+	 * @param opt_options {Object}
+	 * @param opt_options.uGisMap {ugmp.uGisMap} {@link ugmp.uGisMap} 객체.
+	 * @param opt_options.useDragPan {Boolean} 지도 이동 사용 여부. Default is `false`.
+	 * @param opt_options.cursorCssName {String} 마우스 커서 CSS Class Name.
+	 * @param opt_options.activeChangeListener {Function} 컨트롤의 상태 변경 CallBack.
+	 * 
+	 * @Extends {ugmp.control.uGisMeasureDefault}
+	 */
+	ugmp.control.uGisCircleMeasure = ( function(opt_options) {
+		var _self = this;
+		var _super;
+
+
+		/**
+		 * Initialize
+		 */
+		( function() {
+			
+			var options = opt_options || {};
+			
+			options.drawType = "Circle";
+			options.useDrawEndDisplay = true;
+			
+			options.featureStyle = new ol.style.Style( {
+				fill : new ol.style.Fill({
+					color : "rgba(255, 255, 255, 0.2)"
+				}),
+				stroke : new ol.style.Stroke( {
+					color : "#ffcc33",
+					width : 3
+				} ),
+				image : new ol.style.Circle( {
+					radius : 7,
+					fill : new ol.style.Fill( {
+						color : "#ffcc33"
+					} )
+				} )
+			} );
+			
+			options.drawingStyle = new ol.style.Style( {
+				fill : new ol.style.Fill({
+					color : "rgba(255, 255, 255, 0.2)"
+				}),
+				stroke : new ol.style.Stroke( {
+					color : "rgba(0, 0, 0, 0.5)",
+					lineDash : [ 10, 10 ],
+					width : 2
+				} )
+			} );
+			
+			_super = ugmp.control.uGisMeasureDefault.call( _self, options );
+
+			_self._init();
+
+		} )();
+		// END initialize
+
+
+		return ugmp.util.uGisUtil.objectMerge( _super, {
+			_this : _self
+		} );
+
+	} );
+
+	
+	ugmp.control.uGisCircleMeasure.prototype = Object.create( ugmp.control.uGisMeasureDefault.prototype );
+	ugmp.control.uGisCircleMeasure.prototype.constructor = ugmp.control.uGisCircleMeasure;
+	
+	
+	/**
+	 * 초기화
+	 * 
+	 * @override {ugmp.control.uGisMeasureDefault.prototype._init}
+	 * 
+	 * @private
+	 */
+	ugmp.control.uGisCircleMeasure.prototype._init = function() {
+		var _self = this._this || this;
+		
+		ugmp.control.uGisMeasureDefault.prototype._init.call( this );
+		
+		_self.continueMsg = "원 면적 측정";
+		
+		_self.interaction.on( "drawstart", function(evt) {
+			_self.sketch = evt.feature;
+
+			/** @type {ol.Coordinate|undefined} */
+			var tooltipCoord = evt.feature.getGeometry().getCenter();
+			_self.measureTooltip.setPosition( tooltipCoord );
+
+			_self.sketchChangeListener = _self.sketch.getGeometry().on( "change", function(evt) {
+				var geom = evt.target;
+				var output = _self._formatArea( geom );
+
+				_self.measureTooltipElement.innerHTML = output;
+			} );
+		}, this );
+
+		_self.interaction.on( "drawend", function(evt) {
+			var temp = _self.measureTooltip;
+			_self.measureTooltipElement.className = "tooltip tooltip-static";
+			_self.measureTooltip.setOffset( [ 0, -7 ] );
+
+			var closer = document.createElement( "a" );
+			closer.href = "#";
+			closer.className = "tooltip-closer";
+			closer.onclick = function() {
+				_self.uGisMap.getMap().removeOverlay( temp );
+				_self.removeFeature( evt.feature );
+				closer.blur();
+				return false;
+			};
+
+			_self.measureTooltipElement.appendChild( closer );
+
+			_self.sketch = null;
+			_self.measureTooltipElement = null;
+			_self.createMeasureTooltip();
+
+			ol.Observable.unByKey( _self.sketchChangeListener );
+		}, this );
+	}
+
+
+	/**
+	 * Format area output.
+	 * 
+	 * @param {ol.geom.Circle} circle The circle.
+	 * 
+	 * @private
+	 * 
+	 * @return {String} Formatted area.
+	 */
+	ugmp.control.uGisCircleMeasure.prototype._formatArea = function(circle_) {
+		var _self = this._this || this;
+		
+		var sourceProj = _self.uGisMap.getCRS();
+		var c1 = ol.proj.transform( circle_.getFirstCoordinate(), sourceProj, 'EPSG:4326' );
+		var c2 = ol.proj.transform( circle_.getLastCoordinate(), sourceProj, 'EPSG:4326' );
+		var radius = new ol.Sphere( 6378137 ).haversineDistance( c1, c2 );
+
+		var area = radius * radius * Math.PI;
+		
+		var output;
+		
+		if ( area > 10000 ) {
+			output = ( Math.round(area / 1000000 * 100) / 100 ) + " " + "km<sup>2</sup>";
+		} else {
+			output = ( Math.round(area * 100) / 100 ) + " " + "m<sup>2</sup>";
+        }
+		
+        return output;
+	};
+	
+} )();
+
+( function() {
+	"use strict";
+
+	/**
 	 * 마우스 드래그 팬 객체.
 	 * 
 	 * 마우스로 지도를 패닝하여 이동하는 컨트롤 객체.
@@ -17384,7 +18103,7 @@
 				var map = mapBrowserEvent.map;
 
 				mapBrowserEvent.preventDefault();
-				stopEvent = true;
+				// stopEvent = true;
 
 				_self.interaction.dispatchEvent( {
 					type : 'singleClick',

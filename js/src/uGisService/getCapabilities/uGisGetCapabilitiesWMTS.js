@@ -59,7 +59,8 @@
                 var xmlJson = result_.xmlJson;
                 var serviceMetaData = _self.getServiceMetaDataWMTS( olJson );
                 
-				var style = xmlJson["Capabilities"]["Contents"]["Layer"]["Style"];
+                var capabilities = ( xmlJson["Capabilities"] ) ? xmlJson["Capabilities"] : xmlJson["wmts:Capabilities"];
+				var style = capabilities["Contents"]["Layer"]["Style"];
 				if ( style !== undefined ) {
 					var legendURL = style["ows:LegendURL"];
 					if ( legendURL !== undefined ) {
@@ -68,7 +69,7 @@
 	    	        }
 				}
 				
-    	        var extra_serviceIdentification = xmlJson["Capabilities"]["ows:ServiceIdentification"];    	        
+    	        var extra_serviceIdentification = capabilities["ows:ServiceIdentification"];    	        
     	        
     	        if(extra_serviceIdentification  !== undefined ) {
     	        	if ( extra_serviceIdentification["ows:Abstract"] ) {

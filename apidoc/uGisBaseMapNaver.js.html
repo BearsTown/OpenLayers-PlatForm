@@ -2243,6 +2243,67 @@
             </ul>
         </li>
     
+        <li class="item" data-name="ugmp.control.uGisCircleMeasure">
+            <span class="title">
+                <a href="ugmp.control.uGisCircleMeasure.html">ugmp.control.uGisCircleMeasure</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#clear" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#clear">clear</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#destroy" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getActive">getActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getControlKey" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getControlKey">getControlKey</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getFeatures" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getFeatures">getFeatures</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getInteraction" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getInteraction">getInteraction</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#getLayer" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#getLayer">getLayer</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#removeFeature" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#removeFeature">removeFeature</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActive" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActive">setActive</a>
+                </li>
+            
+                <li data-name="ugmp.control.uGisCircleMeasure#setActiveChangeListener" class="">
+                    <a href="ugmp.control.uGisCircleMeasure.html#setActiveChangeListener">setActiveChangeListener</a>
+                </li>
+            
+            </ul>
+            <ul class="fires itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="ugmp.control.uGisControlDefault">
             <span class="title">
                 <a href="ugmp.control.uGisControlDefault.html">ugmp.control.uGisControlDefault</a>
@@ -2722,6 +2783,10 @@
             
                 <li data-name="ugmp.layer.uGisClusterLayer#destroy" class="">
                     <a href="ugmp.layer.uGisClusterLayer.html#destroy">destroy</a>
+                </li>
+            
+                <li data-name="ugmp.layer.uGisClusterLayer#getFeatures" class="">
+                    <a href="ugmp.layer.uGisClusterLayer.html#getFeatures">getFeatures</a>
                 </li>
             
                 <li data-name="ugmp.layer.uGisClusterLayer#getLayerKey" class="">
@@ -4156,28 +4221,33 @@
 			var options = opt_options || {};
 
 			options.isWorld = false;
-			options.isFactor = false;
+			options.isFactor = true;
 			options.baseCode = "naver";
-			options.projection = "EPSG:5181";
-			options.maxExtent = ol.proj.get( "EPSG:5181" ).getExtent();
+			options.projection = "EPSG:3857";
+			options.maxExtent = [ 13833615.936057687, 3779460.9620584883, 14690783.774134403, 4666706.57663997 ];
 			options.mapTypes = {
 				normal : {
 					id : "normal", // naver.maps.MapTypeId[ "NORMAL" ]
-					minZoom : 1,
-					maxZoom : 14
+					minZoom : 6,
+					maxZoom : 21
 				},
 				satellite : {
-					id : "satellite", // naver.maps.MapTypeId[ "SATELLITE" ] 
-					minZoom : 1,
-					maxZoom : 14
+					id : "satellite", // naver.maps.MapTypeId[ "SATELLITE" ]
+					minZoom : 6,
+					maxZoom : 21
 				},
 				hybrid : {
 					id : "hybrid", // naver.maps.MapTypeId[ "HYBRID" ]
-					minZoom : 1,
-					maxZoom : 14
+					minZoom : 6,
+					maxZoom : 21
+				},
+				terrain : {
+					id : "terrain", // naver.maps.MapTypeId[ "TERRAIN" ]
+					minZoom : 6,
+					maxZoom : 21
 				}
 			};
-			
+
 			_super = ugmp.baseMap.uGisBaseMapDefault.call( _self, options );
 
 			_self.checkIsAvailable( "naver.maps.MapTypeId" );

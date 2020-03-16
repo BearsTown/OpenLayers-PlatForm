@@ -12,12 +12,12 @@
 	 * 
 	 * <pre>
 	 * var ugVectorLayer = new ugmp.layer.uGisClusterLayer( {
-	 *	distance : 50,
-	 *	features : [ new ol.Feature( {
-	 *		geometry : new ol.geom.Point({...})
-	 *	} ) ],
-	 *	useAnimation : true,
-	 *	style : new ol.style.Style({...})
+	 * distance : 50,
+	 * features : [ new ol.Feature( {
+	 * 	geometry : new ol.geom.Point({...})
+	 * } ) ],
+	 * useAnimation : true,
+	 * style : new ol.style.Style({...})
 	 * } );
 	 * </pre>
 	 * 
@@ -79,6 +79,7 @@
 		return ugmp.util.uGisUtil.objectMerge( _super, {
 			_this : _self,
 			setDistance : _self.setDistance,
+			getFeatures : _self.getFeatures,
 			setUseAnimation : _self.setUseAnimation
 		} );
 
@@ -192,6 +193,17 @@
 
 		var source = _self.olLayer.getSource();
 		ol.source.Cluster.prototype.setDistance.call( source, distance_ );
+	};
+
+
+	/**
+	 * 레이어의 Feature 리스트를 가져온다.
+	 * 
+	 * @return features {Array.<ol.Feature>} 피처 리스트.
+	 */
+	ugmp.layer.uGisClusterLayer.prototype.getFeatures = function() {
+		var _self = this._this || this;
+		return _self.olLayer.getSource().getSource().getFeatures();
 	};
 
 
