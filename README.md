@@ -3,7 +3,7 @@ OpenLayers를 기반으로 Web GIS 서비스 개발 시 자주 사용되는 기�
 A script library that modularized frequently used functions when developing Web GIS services based on OpenLayers
 
 # API documentation
-[API documentation](http://mapstudio.uitgis.com/uGisMap/uGisMapPlatForm/apidoc){: target="_blank"}
+[API documentation](http://mapstudio.uitgis.com/uGisMap/uGisMapPlatForm/apidoc)
 
 # Examples
-[Examples](http://mapstudio.uitgis.com/uGisMap/uGisMapPlatForm/examples){: target="_blank"}
+[Examples](http://mapstudio.uitgis.com/uGisMap/uGisMapPlatForm/examples)
